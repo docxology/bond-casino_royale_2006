@@ -1,25 +1,38 @@
-conditions:
-  - name: conservative_step
-    role: reference
-    description: "Stable gradient-descent step below the spectral bound."
-  - name: near_optimal_step
-    role: proposed
-    description: "Template-recommended step near the stable convergence region."
-  - name: aggressive_step
-    role: variant
-    description: "Stress condition near or above the stability boundary."
-metrics:
-  primary:
-    name: objective_value
-    direction: minimize
-protocol: "Run the deterministic quadratic optimization sweep with identical initialization, seeds, tolerance, and iteration cap across all declared step-size conditions."
-expected_figures:
-  - fig:convergence_plot
-  - fig:performance_benchmark
-  - fig:step_size_sensitivity
-expected_tables:
-  - tbl:optimization_results
-baselines:
-  - conservative_step
-ablations:
-  - aggressive_step
+# experiment_plan.yaml — advisory mission experiment plan for LE CHIFFRE.
+# Declarative; overlaid for validation, not executed.
+
+mission:
+  film: "casino_royale_2006"
+  codename: "LE CHIFFRE"
+
+experiments:
+  - id: poker_final_hand
+    concept: "Texas hold'em game theory"
+    primary_metric: hero equity vs. pot-odds break-even margin
+    condition: hero on fixed board vs. tight range, seeded Monte-Carlo
+    baseline: break-even equity (to_call / (pot + to_call))
+    expected_outputs: "equity_pct, break_even_pct, action; poker_decision.png"
+
+  - id: laundering_chip_flow
+    concept: "money-laundering detection"
+    primary_metric: composite alert score for the planted launderer
+    condition: synthetic scene (seed 3) with one smurfer
+    baseline: legit players scoring below threshold
+    expected_outputs: "detect() alerts; launderer flagged"
+
+  - id: parkour_extraction
+    concept: "urban parkour routing"
+    primary_metric: weighted route cost (fastest vs. safest)
+    condition: grid=6 climbable quarter, Dijkstra vs. brute-force cross-check
+    baseline: ground-level route cost
+    expected_outputs: "fastest/safest costs + whether rooftops used"
+
+  - id: digitalis_triage
+    concept: "poison detection"
+    primary_metric: toxicity grade + posterior of the spiked sample
+    condition: tray of 5 panels, one spiked with digoxin
+    baseline: therapeutic-range panels graded 'none'
+    expected_outputs: "spiked index, grade, posterior; digitalis_curve.png"
+
+determinism: "fixed SEED=17; seeded random.Random; no wall-clock in provenance"
+ablation: "each concept runs independently and is cross-checked by an alternate real algorithm"

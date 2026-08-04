@@ -1,60 +1,37 @@
-# Experimental Setup {#sec:experimental_setup}
+# Experimental Setup
 
-This section details the complete experimental configuration used to generate the results in this study. Every parameter value below is injected programmatically from `config.yaml` and the analysis pipeline — no value is hardcoded in the manuscript source.
+## Configuration
 
-## Problem Definition
+Mission identity and publication metadata live in `manuscript/config.yaml`
+(title, subtitle, film slug, codename, version, keywords, authorship). The
+engine scenario parameters live in `src/casino_royale_2006/scenarios.py` as
+module constants (`POKER_SCENARIO`, `LAUNDERING_PLAYERS`, `ROUTE_GRID`,
+`POISON_N_SAMPLES`, and the shared `SEED`). Manuscript tokens are computed from
+these plus live engine output by
+`src/casino_royale_2006/manuscript_variables.py` — prose never hardcodes a
+number.
 
-The optimization target is the quadratic objective function defined in [@eq:quadratic_objective]:
+## Canonical scenario
 
-\begin{equation}
-\label{eq:quadratic_objective}
-f(x) = \frac{1}{2} x^T A x - b^T x
-\end{equation}
+| Concept | Fixed inputs (seed `SCENARIO_SEED`) |
+|---|---|
+| Poker | hero `POKER_HERO` on board `POKER_BOARD`, `POKER_RANGE` range, every simulation seeded |
+| Laundering | `LAUNDER_PLAYERS` players over a configurable tick horizon, one planted smurfer |
+| Routes | `ROUTE_GRID`×`ROUTE_GRID` city quarter, ground + rooftop layers, climbable profile |
+| Poison | `POISON_N_SAMPLES` tox panels, one spiked at `POISON_INDEX` |
 
-with $A = {{CONFIG_QUADRATIC_A}}$ and $b = {{CONFIG_QUADRATIC_B}}$, yielding the analytical optimum at $x^* = {{RESULT_OPTIMUM_X}}$ with $f(x^*) = {{RESULT_OPTIMUM_F}}$.
+## Software environment
 
-## Parameter Space
+- Python {{PYTHON_VERSION}} (requires-python `>=3.10`)
+- Dependencies: `bond-api` (the frozen protocol, sibling path dependency),
+  `matplotlib` (figures), `pyyaml` (config); dev: `pytest`, `pytest-cov`,
+  `ruff`, `mypy`, `types-PyYAML`.
+- Deterministic by design: fixed `SEED`, seeded `random.Random` instances,
+  Agg matplotlib backend, no wall-clock in persisted artifacts.
 
-The experiment systematically varies the gradient descent step size across {{CONFIG_NUM_STEP_SIZES}} values:
+## Runtime determinism
 
-{{CONFIG_STEP_SIZES_BULLETS}}
-
-All runs start from the initial point $x_0 = {{CONFIG_INITIAL_POINT}}$ and use a convergence tolerance of $\|{\nabla f}\| < {{CONFIG_CONVERGENCE_TOL}}$ with a maximum iteration limit of $N_{\max} = {{CONFIG_MAX_ITERATIONS}}$.
-
-## Numerical Stability Grid
-
-To validate robustness, the optimizer is exercised across a grid of {{CONFIG_NUM_STABILITY_STARTS}} starting points and {{CONFIG_NUM_STABILITY_STEPS}} step sizes, producing {{CONFIG_STABILITY_CELLS}} total evaluations. This comprehensive sweep confirms that convergence is not an artifact of a narrow parameter choice. The stability metric is computed for the `{{STABILITY_FUNCTION}}` objective via `infrastructure.scientific.stability.check_numerical_stability()`.
-
-## Dimensional Scaling
-
-Performance benchmarking spans problem dimensions $d \in \{{{CONFIG_BENCHMARK_DIMS}}\}$, from the scalar case ($d = {{CONFIG_BENCHMARK_MIN_DIM}}$) to moderate dimensionality ($d = {{CONFIG_BENCHMARK_MAX_DIM}}$), using identity-Hessian quadratics to isolate algorithmic scaling from problem conditioning effects. The tracked `output/reports/performance_benchmark.json` records fixed inputs, exact objective values, and validation checks. Wall-clock timing is retained only as a runtime diagnostic because host load and hardware make microsecond values unsuitable as pinned reproducibility claims.
-
-## Computational Environment
-
-- **Python**: {{PYTHON_VERSION}}
-- **NumPy**: {{NUMPY_VERSION}}
-- **Platform**: {{PLATFORM}}
-- **Generated**: {{GENERATION_TIMESTAMP}}
-
-## Pipeline ordering
-
-Typical `casino_royale_2006` analysis order (see `scripts/pipeline/stage_02_analysis.py` discovery) is:
-
-1. `optimization_analysis.py` — writes `output/data/optimization_results.csv`, `output/figures/*.png`, and JSON reports under `output/reports/`.
-2. `z_generate_manuscript_variables.py` — reads the CSV and YAML, emits `output/data/manuscript_variables.json`, and writes substituted copies to `output/manuscript/` for rendering.
-3. `generate_api_docs.py` — refreshes API markdown consumed by documentation targets.
-
-PDF compilation then reads from `output/manuscript/` so that figure paths and numeric tables match the analysis that just completed.
-
-## Relation to figures
-
-| Figure ([@sec:results]) | Primary inputs |
-|--------------------|------------------|
-| Convergence trajectories | `experiment.step_sizes`, `initial_point`, `tolerance`, `max_iterations` |
-| Step-size sensitivity | Dense $\alpha$ sweep internal to `generate_step_size_sensitivity_plot()` |
-| Convergence rate | Same trajectories as above; tolerance line uses `convergence_tolerance` |
-| Complexity quad panel | One bar chart per row of `optimization_results.csv` |
-| Stability heatmap | `stability_starting_points` $\times$ `stability_step_sizes` |
-| Dimensional benchmark | `benchmark_dimensions`, fixed $\alpha=0.1$, internal tol $10^{-10}$ |
-
-This table is descriptive documentation only; it is not executed as code during the build.
+Each `*_snapshot` in `scenarios.py` constructs its own
+`random.Random(seed)` and never touches the global RNG. The mission's
+`Provenance` records `seed` and a deterministic `input_hash`; `wall_time_s` is
+held at `0.0` so no two runs diverge on timing.

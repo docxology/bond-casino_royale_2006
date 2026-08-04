@@ -1,31 +1,28 @@
 {
-  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
-  "@type": "SoftwareSourceCode",
-  "author": [
-    {
-      "@id": "https://orcid.org/0000-0001-6232-9096",
-      "@type": "Person",
-      "affiliation": {
-        "@type": "Organization",
-        "name": "Active Inference Institute"
-      },
-      "familyName": "Friedman",
-      "givenName": "Daniel Ari"
-    }
-  ],
-  "codeRepository": "https://github.com/docxology/casino_royale_2006",
-  "dateModified": "2026-07-10",
-  "identifier": "10.5281/zenodo.20417136",
+  "name": "casino-royale-2006",
+  "version": "0.1.0",
+  "description": "Casino Royale (2006) LE CHIFFRE special-agent mission software: poker game-theory engine, chip-flow laundering detection, parkour mobility routing, digitalis poison detection.",
   "keywords": [
-    "optimization algorithms",
-    "gradient descent",
-    "convergence analysis",
-    "numerical methods",
-    "mathematical programming",
-    "reproducible research",
-    "infrastructure automation"
+    "poker",
+    "game-theory",
+    "pot-odds",
+    "equity",
+    "anti-money-laundering",
+    "graph",
+    "parkour",
+    "poison",
+    "digitalis"
   ],
-  "license": "https://spdx.org/licenses/MIT",
-  "name": "Convergence Analysis of Gradient Descent Optimization",
-  "version": "2.5.2"
+  "author": {
+    "name": "Daniel Ari Friedman",
+    "email": "daniel@activeinference.institute"
+  },
+  "license": "MIT",
+  "repository": "local-only working tree (no remote)",
+  "code": {
+    "language": "python",
+    "frameworks": [
+      "pytest"
+    ]
+  }
 }

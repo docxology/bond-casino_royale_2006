@@ -1,10 +1,24 @@
-# References {#sec:references}
+# References
 
-Bibliography lives in [`manuscript/references.bib`](references.bib) and is read by Pandoc during PDF render. The build pipeline invokes Pandoc with `--natbib`, so every `[@key]` citation in the manuscript is rewritten to the appropriate `\cite{}`/`\citep{}`/`\citet{}` LaTeX command and resolved against the bib file.
+## Software & standards
 
-To validate that `references.bib` is syntactically clean and contains the required fields per entry type:
+- The frozen BOND-API `MissionProvider` protocol (codename THE PROTOCOL) and
+  its discovery/registry modules — the contract this film package implements.
+- Python `random` module seeded RNG; `matplotlib` (Agg backend) for figures;
+  `PyYAML` for configuration.
 
-```bash
-uv run python -m infrastructure.reference.citation.cli validate \
-    projects/working/bond/casino_royale_2006/manuscript/references.bib --strict
-```
+## Domain literature
+
+- Texas hold'em hand ranking and Monte-Carlo equity estimation: standard
+  combinatorial enumeration of five-of-seven-card hands.
+- Anti-money-laundering transaction-network analysis: structuring (smurfing)
+  typologies, velocity, and betweenness centrality of collection hubs.
+- Weighted shortest-path planning on mobility graphs: Dijkstra's algorithm
+  with feasibility constraints.
+- Cardiac glycoside (digoxin/digitoxin) toxicology: narrow therapeutic index,
+  bradycardia, hyperkalemia, PR prolongation, and digoxin-specific Fab
+  antibody fragments (Digibind) as definitive treatment for severe toxicity.
+
+> Note: because this BOND tree is local-only, citations are stored as
+> descriptive entries in `references.bib` rather than DOIs for a remote
+> registry.

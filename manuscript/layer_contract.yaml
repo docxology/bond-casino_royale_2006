@@ -1,5 +1,43 @@
-# Code-centric exemplar: optional monorepo adapters only.
-allow_infrastructure_imports:
-  - src/analysis/_infra.py
-  - src/_runtime.py
-  - src/benchmark_support.py
+# Layer contract for the LE CHIFFRE mission package.
+# Enforced discipline: pure cores stay framework-free; the adapter binds to
+# bond-api; scripts stay thin.
+
+layers:
+  - name: domain-core
+    description: Pure optimization/inference logic. No infrastructure.* and no bond-api imports.
+    paths:
+      - src/casino_royale_2006/poker_engine.py
+      - src/casino_royale_2006/laundering_detect.py
+      - src/casino_royale_2006/urban_routes.py
+      - src/casino_royale_2006/poison_detect.py
+      - src/casino_royale_2006/scenarios.py
+    rule: stdlib only (plus matplotlib in figures/); must import without bond-api present.
+
+  - name: protocol-adapter
+    description: Thin binding of the domain cores to the frozen bond-api MissionProvider.
+    paths:
+      - src/casino_royale_2006/mission.py
+    rule: imports bond_api; exposes MissionProvider + registers gadgets; no business logic.
+
+  - name: manuscript
+    description: Token hydration and figure rendering.
+    paths:
+      - src/casino_royale_2006/manuscript_variables.py
+      - src/casino_royale_2006/figures/
+    rule: tokens from config.yaml + live engine output; never hand-authored metrics.
+
+  - name: scripts
+    description: Thin orchestrators per mission phase.
+    paths:
+      - scripts/
+    rule: sys.path bootstrap + argv forwarding; no math.
+
+  - name: docs-meta
+    description: Documentation and declarative metadata.
+    paths:
+      - docs/
+      - data/
+      - domain_profile.yaml
+      - experiment_plan.yaml
+      - manuscript/config.yaml
+    rule: advisory inputs and behavioral rules; no executable logic.

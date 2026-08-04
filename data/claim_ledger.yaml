@@ -1,57 +1,40 @@
+# claim_ledger.yaml — source-backed numeric claims for the LE CHIFFRE mission.
+# Register claims whose values are intentionally disclaimable but traceable.
+# Values are mirrored into manuscript prose via {{TOKEN}}s, never duplicated.
+
 claims:
-  - claim_id: figure-export-dpi
-    kind: number
-    value: 300
-    source: projects/working/bond/casino_royale_2006/src/viz_config.py plotting defaults (dpi)
-    source_tier: project_source
-    freshness: active
-    artifact_path: output/figures/convergence_plot.png
-  - claim_id: step-size-sensitivity-cap
-    kind: number
-    value: 500
-    source: projects/working/bond/casino_royale_2006/src/sweeps.py sensitivity_sweep max_iter cap
-    source_tier: generated_metric
-    freshness: active
-    artifact_path: output/figures/step_size_sensitivity.png
-  - claim_id: stability-log-lower
-    kind: number
-    value: -6
-    source: projects/working/bond/casino_royale_2006/src/figures/scientific_stability.py stability visualization caption
-    source_tier: project_source
-    freshness: active
-    artifact_path: output/figures/stability_analysis.png
-  - claim_id: solution-relative-error-exponent
-    kind: number
-    value: -4
-    source: projects/working/bond/casino_royale_2006/manuscript/03_results.md stated precision threshold
-    source_tier: manuscript_claim
-    freshness: active
-    artifact_path: manuscript/03_results.md
-  - claim_id: stability-log-upper
-    kind: number
-    value: -9
-    source: projects/working/bond/casino_royale_2006/src/figures/scientific_stability.py stability visualization caption
-    source_tier: project_source
-    freshness: active
-    artifact_path: output/figures/stability_analysis.png
-  - claim_id: benchmark-tolerance-exponent
-    kind: number
-    value: -10
-    source: projects/working/bond/casino_royale_2006/scripts/optimization_analysis.py dimensional benchmark tolerance
-    source_tier: project_source
-    freshness: active
-    artifact_path: output/figures/performance_benchmark.png
-  - claim_id: benchmark-min-iterations
-    kind: number
-    value: 219
-    source: projects/working/bond/casino_royale_2006/manuscript/03_results.md benchmark caption
-    source_tier: manuscript_claim
-    freshness: active
-    artifact_path: output/figures/performance_benchmark.png
-  - claim_id: benchmark-max-iterations
-    kind: number
-    value: 238
-    source: projects/working/bond/casino_royale_2006/manuscript/03_results.md benchmark caption
-    source_tier: manuscript_claim
-    freshness: active
-    artifact_path: output/figures/performance_benchmark.png
+  - claim_id: digoxin_therapeutic_range
+    kind: toxicology_reference
+    value: "0.5-2.0 ng/mL therapeutic digoxin"
+    source: "src/casino_royale_2006/poison_detect.py (THERAPEUTIC_LOW/TOXIC_CONC)"
+    source_tier: literature_reference
+    freshness: static
+    note: "cardiac-glycoside therapeutic index; >2.0 toxicity risk, >3.5 severe"
+
+  - claim_id: poker_aa_vs_kk_preflop
+    kind: computed
+    value: "~0.819 heads-up preflop AA win equity (published reference)"
+    source: "tests/test_poker_engine.py (monte_carlo_equity, seeded)"
+    source_tier: computed_reference
+    freshness: regenerable
+
+  - claim_id: structuring_band
+    kind: typology_definition
+    value: "transfers in [threshold/2, threshold) = structuring band"
+    source: "src/casino_royale_2006/laundering_detect.py (structuring_count)"
+    source_tier: algorithm_definition
+    freshness: static
+
+  - claim_id: canonical_seed
+    kind: determinism
+    value: "SEED = 17 for all canonical snapshots"
+    source: "src/casino_royale_2006/scenarios.py (SEED)"
+    source_tier: configuration
+    freshness: static
+
+  - claim_id: launderer_flagged
+    kind: computed
+    value: "synthetic scene flags the planted smurfer (composite score)"
+    source: "src/casino_royale_2006/laundering_detect.py::detect on synthetic_flow(3)"
+    source_tier: computed_regenerable
+    freshness: regenerable

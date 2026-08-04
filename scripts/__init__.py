@@ -1,1 +1,1 @@
-"""Thin orchestrator scripts for casino_royale_2006."""
+"""Thin mission-phase CLIs for the LE CHIFFRE package."""

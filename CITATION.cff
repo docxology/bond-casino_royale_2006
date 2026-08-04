@@ -1,22 +1,28 @@
-authors:
-- affiliation: Active Inference Institute
-  family-names: Friedman
-  given-names: Daniel Ari
-  orcid: 0000-0001-6232-9096
 cff-version: 1.2.0
-date-released: '2026-07-10'
-doi: 10.5281/zenodo.20417136
+message: "Casino Royale (2006) LE CHIFFRE mission software (PROJECT BOND)."
+title: "Casino Royale: LE CHIFFRE — Special-Agent Mission Software"
+abstract: >
+  Deterministic special-agent mission software mapping the film's set pieces to
+  four tested algorithms: a Texas hold'em game-theory engine, chip-movement
+  money-laundering detection, parkour mobility routing, and digitalis poison
+  detection, bound as a BOND-API MissionProvider.
+authors:
+  - family-names: Friedman
+    given-names: Daniel Ari
+    orcid: "https://orcid.org/0000-0001-6232-9096"
+    affiliation: "Active Inference Institute"
 keywords:
-- optimization algorithms
-- gradient descent
-- convergence analysis
-- numerical methods
-- mathematical programming
-- reproducible research
-- infrastructure automation
+  - "Texas hold'em"
+  - "pot odds"
+  - "hand equity"
+  - "opponent modelling"
+  - "money-laundering detection"
+  - "chip movement"
+  - "parkour routing"
+  - "mobility graphs"
+  - "digitalis"
+  - "poison detection"
 license: MIT
-message: If you use this software, please cite it using the metadata from this file.
-repository-code: https://github.com/docxology/casino_royale_2006
-title: Convergence Analysis of Gradient Descent Optimization
+version: 0.1.0
 type: software
-version: 2.5.2
+repository-code: "local-only working tree (no remote)"

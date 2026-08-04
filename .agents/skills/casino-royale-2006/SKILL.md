@@ -1,53 +1,66 @@
 ---
 name: casino-royale-2006
-description: Code-centric optimization research exemplar — gradient descent, convergence analysis, automated figures, dashboard, and publication-quality PDF.
+description: Casino Royale (2006) LE CHIFFRE BOND film package — hold'em game theory, chip-flow laundering, parkour routing, digitalis triage, MissionProvider.
 version: 0.1.0
-author: docxology
+author: Daniel Ari Friedman
 license: MIT
-tags: [exemplar, code, optimization, thin-orchestrator]
+tags: [bond, film-package, mission-provider, poker, anti-money-laundering, graph, poison]
 ---
 
 # casino-royale-2006
 
-Project-scoped skill for the in-repo exemplar at
-`projects/working/bond/casino_royale_2006/`. Load this when working inside the project.
+Project-scoped skill for the BOND film package at
+`projects/working/bond/casino_royale_2006/`. Load this when working inside the
+project.
 
 ## When to Use
 
-- Working inside the `casino_royale_2006` exemplar — running scripts, editing source,
-  or regenerating outputs.
-- Forking this exemplar as the starting scaffold for a new research project.
-- Validating that the exemplar's contracts (thin-orchestrator, layer boundaries,
-  no-mocks testing) still hold after changes.
+- Implementing or extending any part of the LE CHIFFRE mission: the four pure
+  domain cores, the bond-api `MissionProvider` adapter, manuscript tokens, or
+  the phase CLIs.
+- Verifying the package against the shared BOND guardrails (coverage, no mocks,
+  lineage, ruff/mypy, clean tree).
 
 ## Quick Reference
 
+- Pure core (stdlib, no bond-api): `src/casino_royale_2006/{poker_engine,
+  laundering_detect, urban_routes, poison_detect, scenarios}.py`.
+- Adapter: `src/casino_royale_2006/mission.py` (film `casino_royale_2006`,
+  `GADGET_REGISTRY` populated at import).
+- One canonical scenario: `scenarios.SEED = 17`; snapshots drive the mission
+  outcome and manuscript `{{TOKEN}}`s.
+- Manuscript tokens: `src/casino_royale_2006/manuscript_variables.py
+  ::generate_variables()`; figures in `figures/plotting.py`.
+
+## Key Commands
+
 ```bash
-# From the repository root
-uv run pytest projects/working/bond/casino_royale_2006/tests --cov=projects/working/bond/casino_royale_2006/src --cov-fail-under=90
-uv run python scripts/pipeline/stage_02_analysis.py --project templates/casino_royale_2006
-uv run python scripts/pipeline/stage_03_render.py --project templates/casino_royale_2006
-uv run python scripts/pipeline/stage_04_validate.py --project templates/casino_royale_2006
-uv run python scripts/pipeline/stage_05_copy.py --project templates/casino_royale_2006
+cd projects/working/bond/casino_royale_2006
+uv sync --extra dev
+uv run pytest tests/ --cov=src --cov-fail-under=90 -q
+uv run ruff check src/ scripts/ && uv run ruff format --check src/ scripts/
+uv run mypy src/ scripts/
+rg "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' || echo Clean
+uv run python scripts/run_debrief.py        # full five-stage mission
+uv run python scripts/z_generate_manuscript_variables.py
 ```
 
 ## Pitfalls
 
-- **Keep scripts thin.** Business logic belongs in `src/` or shared
-  `infrastructure/`, not in `scripts/`.
-- **No mocks.** All tests must use real data, real files, and real
-  computation.
-- **Outputs are disposable.** Never hand-edit `output/` — regenerate from
-  source and config.
-- **Keep tracked benchmarks deterministic.** Serialize reproducible inputs,
-  objective values, and checks; keep wall-clock timing as a runtime-only
-  diagnostic.
-- **Run from the repo root.** Commands assume the template monorepo root
-  as working directory unless the child `AGENTS.md` states otherwise.
+- Keep the four core modules free of any `infrastructure.*` or `bond_api`
+  import — the guardrails require them importable standalone (fallback if the
+  path dep fails).
+- `bond-api` is FROZEN. Code to `bond_api.protocol`; do not invent protocol
+  types.
+- Determinism: always pass a seeded `random.Random`; never rely on the global
+  RNG or wall-clock in provenance.
+- Manuscript numeric claims must be `{{TOKEN}}`s from `generate_variables()`;
+  the cross-reference test scans `manuscript/[0-9]*.md` only.
+- After edits run the full gate, then clean up any stray `output/` state
+  (git-ignored) before the path-scoped commit.
 
-## Cross-refs
+## Cross-Refs
 
-- Project contract: [`AGENTS.md`](../../../AGENTS.md)
-- README: [`README.md`](../../../README.md)
-- TODO: [`TODO.md`](../../../TODO.md)
-- Exemplar roster: [`projects/AGENTS.md`](../../../../../AGENTS.md)
+- BOND protocol (frozen): `projects/working/bond/bond-api/src/bond_api/protocol.py`
+- Suite guardrails: Hermes skill `bond-suite-package-development`
+- Project rulebook: `docs/agent_instructions.md`

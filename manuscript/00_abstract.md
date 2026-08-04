@@ -1,11 +1,25 @@
-# Abstract {#sec:abstract}
+# Abstract
 
-This paper presents a convergence study of **fixed-step gradient descent** on a convex quadratic, framed as the computational exemplar of the [Research Project Template](https://github.com/docxology/template). The implementation lives in `projects/working/bond/casino_royale_2006/src/optimizer.py`; experiments and figures are orchestrated by `projects/working/bond/casino_royale_2006/scripts/optimization_analysis.py` and hydrated into the manuscript through `scripts/z_generate_manuscript_variables.py`, so tables and prose track `output/data/optimization_results.csv` after every pipeline run.
+**{{MISSION_TITLE}}** is the special-agent mission software for the film
+*Casino Royale* (2006), mission codename **{{MISSION_CODENAME}}**. It packages
+four deterministic, infrastructure-free domain cores — a Texas hold'em
+game-theory engine, a chip-movement money-laundering detector, a parkour
+mobility-graph router, and a digitalis (cardiac-glycoside) poison triage — into
+a single `MissionProvider` bound to the frozen BOND-API protocol.
 
-We evaluate {{CONFIG_NUM_STEP_SIZES}} step sizes from $\alpha = {{CONFIG_MIN_STEP_SIZE}}$ to $\alpha = {{CONFIG_MAX_STEP_SIZE}}$, spanning conservative, near-optimal, aggressive, and divergent regimes for a unit Hessian model. The build chain exercises template infrastructure end-to-end: scientific helpers (`infrastructure.scientific.stability`, `infrastructure.scientific.benchmarking`), validation, rendering (`infrastructure/rendering/pdf_renderer.py`), and reporting. Accessibility-oriented plotting defaults (colourblind-safe palette, 300 dpi exports) are centralized in `src/figures/` and `src/analysis/`.
+The four cores are exercised on one canonical scenario (seed-stable, no
+wall-clock in provenance). Against Le Chiffre's tight range on the final board,
+the engine prices the hero hand at {{POKER_EQUITY_PCT}}% equity against a
+pot-odds break-even of {{POKER_BREAK_EVEN_PCT}}%, a margin of
+{{POKER_MARGIN_PCT}}% that recommends **{{POKER_ACTION}}**. The chip-flow
+scanner ingests {{LAUNDER_TRANSACTIONS}} movements across {{LAUNDER_PLAYERS}}
+players and flags the planted smurfer with a composite score of
+{{LAUNDER_SCORE}} ({{LAUNDER_ALERTS}} alert(s) total). The routing planner
+short-cuts the {{ROUTE_GRID}}×{{ROUTE_GRID}} quarter via the rooftops (cost
+{{ROUTE_FASTEST_COST}}) while the risk-priced, ground-level route costs
+{{ROUTE_SAFEST_COST}}. The tox triage isolates the spiked martini
+{{POISON_SPIKED_INDEX}} of {{POISON_SAMPLES}} samples at {{POISON_DIGOXIN}}
+ng/mL digoxin ({{POISON_GRADE}} toxicity, posterior {{POISON_POSTERIOR}}).
 
-Contributions are **methodological** and **architectural**. On the methods side, we relate empirical iteration counts and error decay to the scalar contraction factor $\rho(\alpha) = |1-\alpha|$ and document cases where runs hit $N_{\max} = {{CONFIG_MAX_ITERATIONS}}$ before meeting the gradient tolerance. On the architecture side, we demonstrate a zero-mock test suite on project `src/` (see [test_optimizer.py](https://github.com/docxology/template/blob/main/projects/working/bond/casino_royale_2006/tests/test_optimizer.py)), automated six-figure analysis, and reproducibility metadata (configuration hash, artifact counts) injected into [@sec:reproducibility].
-
-**Results (this configuration):** {{RESULT_NUM_CONVERGED}} of {{CONFIG_NUM_STEP_SIZES}} grid points report `converged=True` in the CSV; non-convergent rows flag either slow progress at small $\alpha$ under the iteration cap or instability when $|1-\alpha| \geq 1$. The analytical minimizer remains $x^\ast = {{RESULT_OPTIMUM_X}}$ with $f(x^\ast) = {{RESULT_OPTIMUM_F}}$ for the configured $(A,b)$.
-
-**Keywords:** {{CONFIG_KEYWORDS}}
+Every result shown here, and in the sections that follow, is computed live from
+the engines at manuscript-generation time — none is hand-authored.
