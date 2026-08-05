@@ -31,7 +31,13 @@ tokens and the four figures.
 - Path-scoped commits, `git add -A` inside this repo only.
 - No mock framework. Real data + computation only.
 - ≥90% line+branch coverage: `uv run pytest tests/ --cov=src --cov-fail-under=90`.
-- Deterministic: fixed seeds, seeded RNG, no wall-clock in provenance.
+- Deterministic: fixed seeds, seeded RNG, no wall-clock anywhere on the
+  persisted-artifact path. `output/data/manuscript_variables.json` and
+  `output/manuscript/*.md` are byte-identical across reruns (figures are
+  outside that claim). Dates belong in `manuscript/config.yaml`
+  (`publication.date` → `{{MANUSCRIPT_DATE}}`), never `datetime.now()`. If you
+  ever need a real run timestamp, put it in a record the claim excludes and say
+  so in `manuscript/06_reproducibility.md`.
 - Thin orchestrators in `scripts/`; business logic in `src/`.
 - Pure core imports no `infrastructure.*` and no `bond_api` — `mission.py` is
   the sole exception.

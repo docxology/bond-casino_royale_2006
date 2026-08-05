@@ -9,15 +9,17 @@ uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 
 ## Test suite
 
-- **190 tests passed**, 0 skipped, 0 failed (2026-08-05, Python 3.14.6).
+- **199 tests passed**, 0 skipped, 0 failed (2026-08-05, Python 3.14.6).
 - Zero mocks: no `unittest.mock` / `MagicMock` / `@patch` / `create_autospec`
   in `tests/` or `src/`.
 - Deterministic: fixed seeds, seeded RNG, fully enumerated CFR / ICM / Bayesian
-  engines, no wall-clock in provenance.
+  engines, and no wall-clock anywhere on the persisted-artifact path — the
+  manuscript's publication stamp is the committed `publication.date` in
+  `manuscript/config.yaml`, not `datetime.now()`.
 
 ## Coverage on `src/`
 
-- **97.13%** line + branch (gate: `--cov-fail-under=90`), `branch = true`.
+- **97.15%** line + branch (gate: `--cov-fail-under=90`), `branch = true`.
 - At 100%: `mission.py`, `scenarios.py`, `gadgets.py`, `poison_detect.py`,
   `figures/plotting.py`.
 - Lowest module: `icm.py` at 92.81%. The residual misses across `icm.py` and
@@ -49,6 +51,13 @@ failing by breaking the thing it guards:
 - Derived opponent range: red when `poker_snapshot` hard-codes the tight range
   again, and when the archetype's `raise_margin` is dropped.
 - `path_cost`: red when it ignores its `weights` argument.
+- Regeneration determinism (added 2026-08-05, after the wall-clock breach):
+  `test_regeneration_is_byte_identical_across_a_clock_tick` and
+  `test_generate_variables_is_a_pure_function_of_committed_inputs` both go red
+  when `MANUSCRIPT_DATE` is temporarily restored to
+  `datetime.now(timezone.utc)` — the artifact hash moved between the two runs,
+  exactly as it had been doing in production while the old injected-`now` test
+  stayed green.
 - Figures: red when the poker chart plots break-even twice, the digitalis sweep
   uses a different panel, the ICM chart plots stacks instead of bubble factors,
   or the CFR chart plots a constant instead of the regret trace.

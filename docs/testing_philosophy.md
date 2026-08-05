@@ -40,8 +40,15 @@ value* is introduced, so the test is capable of failing.
 - Figures render under the Agg backend; `Provenance.wall_time_s` is pinned to
   `0.0` and `input_hash` is a SHA-256 over scenario constants, so no artifact
   carries a clock reading.
-- Manuscript variable tests pass an explicit `now=` override so
-  `GENERATION_TIMESTAMP` is deterministic.
+- `generate_variables()` takes no clock argument and reads none. Its publication
+  stamp, `MANUSCRIPT_DATE`, comes from the committed `publication.date` field of
+  `manuscript/config.yaml`. The determinism tests therefore inject nothing: they
+  run the generator twice across a real whole-second boundary and compare bytes
+  (`test_generate_variables_is_a_pure_function_of_committed_inputs`,
+  `test_regeneration_is_byte_identical_across_a_clock_tick`). An earlier version
+  stamped `datetime.now()` and was "pinned" by a test that passed its own `now=`
+  — the injected value hid the production default, and the JSON artifact changed
+  on every run while the suite stayed green.
 
 ## Coverage command
 

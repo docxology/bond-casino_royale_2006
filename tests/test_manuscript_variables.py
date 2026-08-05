@@ -2,15 +2,29 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import time
 
 import pytest
+import yaml
 
 from casino_royale_2006 import laundering_network as ln
 from casino_royale_2006 import manuscript_variables as mv
 from casino_royale_2006 import poker_engine as pe
 from casino_royale_2006 import scenarios
 from casino_royale_2006.laundering_detect import ChipTransaction, synthetic_flow
+
+
+def _wait_for_wall_clock_tick(limit_s: float = 2.0) -> None:
+    """Block until the wall clock's whole-second field advances.
+
+    Bounded by ``limit_s`` so a frozen clock fails the caller's assertion
+    rather than hanging the suite.
+    """
+    start = time.time()
+    while int(time.time()) == int(start):
+        if time.time() - start > limit_s:  # pragma: no cover - clock never froze
+            raise AssertionError("wall clock did not advance")
+        time.sleep(0.02)
 
 
 def test_load_mission_config_default():
@@ -32,7 +46,7 @@ def test_load_mission_config_non_mapping(tmp_path):
 
 
 def test_generate_variables_keys_and_types():
-    variables = mv.generate_variables(now=datetime(2026, 1, 1, tzinfo=timezone.utc))
+    variables = mv.generate_variables()
     for key in (
         "MISSION_TITLE",
         "MISSION_CODENAME",
@@ -42,17 +56,63 @@ def test_generate_variables_keys_and_types():
         "POISON_GRADE",
         "CONCEPT_MODULES",
         "NUM_CONCEPT_MODULES",
-        "GENERATION_TIMESTAMP",
+        "MANUSCRIPT_DATE",
     ):
         assert key in variables
         assert isinstance(variables[key], str)
 
 
-def test_generate_variables_deterministic_with_now():
-    stamp = datetime(2026, 2, 3, 12, 30, tzinfo=timezone.utc)
-    a = mv.generate_variables(now=stamp)
-    b = mv.generate_variables(now=stamp)
-    assert a == b
+def test_manuscript_date_comes_from_the_committed_config():
+    """The publication stamp is read from config.yaml, not from the clock."""
+    config = mv.load_mission_config()
+    assert mv.generate_variables()["MANUSCRIPT_DATE"] == config["publication"]["date"]
+
+
+def test_manuscript_date_tracks_an_edited_config(tmp_path):
+    """Change the committed date, and the token changes with it.
+
+    Without this, ``MANUSCRIPT_DATE`` could be a hardcoded literal that happens
+    to equal the config value; here the config is the only thing that moves.
+    """
+    config = mv.load_mission_config()
+    config["publication"]["date"] = "1953-04-13"  # Fleming's Casino Royale, first edition
+    edited = tmp_path / "config.yaml"
+    edited.write_text(yaml.safe_dump(config), encoding="utf-8")
+    assert mv.generate_variables(config_path=edited)["MANUSCRIPT_DATE"] == "1953-04-13"
+
+
+@pytest.mark.parametrize(
+    "publication",
+    [
+        None,
+        {},
+        {"date": ""},
+        {"date": "2026/08/05"},
+        {"date": "August 5, 2026"},
+        "not-a-mapping",
+    ],
+)
+def test_manuscript_date_rejects_a_missing_or_malformed_stamp(publication):
+    config: dict = {"title": "x"}
+    if publication is not None:
+        config["publication"] = publication
+    with pytest.raises(ValueError, match=r"publication\.date"):
+        mv.manuscript_date(config)
+
+
+def test_generate_variables_is_a_pure_function_of_committed_inputs():
+    """Two calls straddling a wall-clock tick must produce an equal mapping.
+
+    The straddle is the point. ``generate_variables()`` used to stamp
+    ``datetime.now(timezone.utc)`` at second resolution, so two back-to-back
+    calls inside the same second compared equal and a naive repeat-call test
+    passed while the artifacts on disk changed hourly. Waiting for the clock's
+    seconds field to advance is the condition that made that version fail.
+    """
+    first = mv.generate_variables()
+    _wait_for_wall_clock_tick()
+    second = mv.generate_variables()
+    assert first == second
 
 
 def test_project_root_exists():

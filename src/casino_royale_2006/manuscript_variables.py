@@ -9,13 +9,19 @@ The produced mapping is written to ``output/data/manuscript_variables.json``
 by ``scripts/z_generate_manuscript_variables.py``; the live cross-reference
 test over ``manuscript/[0-9]*.md`` guarantees every ``{{TOKEN}}`` referenced
 in a prose section exists in this mapping.
+
+**No wall clock.** Every value here is a function of committed inputs only:
+``manuscript/config.yaml``, the package version, and seeded engine output.
+The manuscript's publication stamp is the committed ``publication.date`` field,
+never ``datetime.now()`` - reading the clock here would put a fresh value into
+``output/data/manuscript_variables.json`` on every run and break the package's
+byte-identical-regeneration claim (see ``manuscript/06_reproducibility.md``).
 """
 
 from __future__ import annotations
 
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -54,6 +60,35 @@ def load_mission_config(config_path: str | Path | None = None) -> dict[str, Any]
     return loaded
 
 
+#: An ISO calendar date, ``YYYY-MM-DD`` - the shape ``publication.date`` must take.
+_ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def manuscript_date(config: dict[str, Any]) -> str:
+    """Return the committed publication date from a loaded mission config.
+
+    This is the deterministic replacement for a wall-clock generation stamp:
+    the value lives in ``manuscript/config.yaml`` under ``publication.date``,
+    so it changes only when a human edits and commits it, and two regenerations
+    of the manuscript produce byte-identical artifacts.
+
+    Raises:
+        ValueError: if ``publication.date`` is missing or is not ``YYYY-MM-DD``.
+            Failing loudly is deliberate - a silent empty default would put an
+            empty stamp into the published manuscript.
+    """
+    publication = config.get("publication")
+    raw = publication.get("date") if isinstance(publication, dict) else None
+    value = str(raw) if raw is not None else ""
+    if not _ISO_DATE.match(value):
+        raise ValueError(
+            "mission config must set publication.date to an ISO YYYY-MM-DD "
+            f"calendar date (got {value!r}); it is the manuscript's committed, "
+            "wall-clock-free publication stamp"
+        )
+    return value
+
+
 #: Above this magnitude an integral float is printed with thousands separators
 #: rather than ``%g``, which would render a pot of 5000000.0 as "5e+06".
 _SEPARATOR_THRESHOLD = 10_000.0
@@ -78,16 +113,16 @@ def _fmt(value: Any) -> str:
     return str(value)
 
 
-def generate_variables(
-    config_path: str | Path | None = None,
-    now: datetime | None = None,
-) -> dict[str, str]:
+def generate_variables(config_path: str | Path | None = None) -> dict[str, str]:
     """Compute the full mission ``{{TOKEN}}`` mapping.
+
+    The mapping is a pure function of committed inputs - the config file, the
+    package version, and the seeded engine snapshot. It takes no clock
+    argument and reads no clock, so calling it twice a day apart returns
+    equal mappings.
 
     Args:
         config_path: override path to ``manuscript/config.yaml``.
-        now: explicit timestamp override for ``GENERATION_TIMESTAMP`` (keeps
-            tests deterministic); defaults to the current UTC time.
 
     Returns:
         A ``{TOKEN: value}`` mapping, every value a string.
@@ -103,7 +138,6 @@ def generate_variables(
     poison = snap["poison"]
     opponent = snap["opponent_bayes"]
 
-    stamp = now if now is not None else datetime.now(timezone.utc)
     variables: dict[str, str] = {
         # identity (from config.yaml)
         "MISSION_TITLE": str(config.get("title", "")),
@@ -117,7 +151,7 @@ def generate_variables(
         "GADGET_NAMES": ", ".join(GADGET_NAMES),
         "NUM_GADGETS": str(len(GADGET_NAMES)),
         "PYTHON_VERSION": f"{sys.version_info.major}.{sys.version_info.minor}",
-        "GENERATION_TIMESTAMP": stamp.isoformat(timespec="seconds"),
+        "MANUSCRIPT_DATE": manuscript_date(config),
         # poker
         "POKER_HERO": str(poker["hero"]),
         "POKER_BOARD": str(poker["board"]),

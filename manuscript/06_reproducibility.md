@@ -5,8 +5,21 @@
 Every engine draw comes from a caller-supplied, seeded `random.Random`. The
 mission outcome's `Provenance` carries `package_version`, `seed`, and a
 deterministic `input_hash` derived from the canonical scenario (not wall
-clock). Re-running `run_mission` twice yields identical results; rendering the
-manuscript twice yields identical `output/manuscript/*.md` copies.
+clock). Re-running `run_mission` twice yields identical results.
+
+**Scope of the byte-identical claim.** Running
+`scripts/z_generate_manuscript_variables.py` twice, any interval apart,
+produces byte-identical `output/data/manuscript_variables.json` and
+`output/manuscript/*.md`. Nothing in that path reads a clock: the manuscript's
+publication stamp is the `MANUSCRIPT_DATE` token, read from the committed
+`publication.date` field of `manuscript/config.yaml` (currently
+{{MANUSCRIPT_DATE}}), so it moves only when a human edits and commits it. The
+claim covers the token mapping and the resolved prose; it does not extend to
+the rendered `output/figures/*.png`, whose bytes depend on the installed
+Matplotlib and freetype build.
+`tests/test_scripts_smoke.py::test_regeneration_is_byte_identical_across_a_clock_tick`
+pins exactly that scope by running the real generator twice across a
+whole-second boundary and comparing artifact bytes.
 
 ## Artifact layout
 
