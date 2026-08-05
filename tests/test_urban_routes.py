@@ -153,3 +153,40 @@ def test_default_profile_cannot_climb_roof():
     path = g.shortest_path("g0_0", "g2_2", ur.ParkourProfile())
     assert path is not None
     assert not any(n.startswith("r") for n in path[0])
+
+
+# ---------------------------------------------------------- path cost -----
+def test_path_cost_reprices_a_route_under_another_objective():
+    """A route's cost is only meaningful under the weighting that produced it.
+
+    Priced under its own weighting, ``path_cost`` must reproduce the cost
+    Dijkstra reported; priced under a different weighting it must change, which
+    is precisely why two routes solved under two objectives cannot be compared
+    by their headline numbers.
+    """
+    graph = ur.build_city_quarter(17, grid=4)
+    profile = ur.ParkourProfile(max_climb=13.0, max_drop=13.0)
+    fast_w = (1.0, 0.3, 0.3)
+    safe_w = (0.1, 0.4, 1.0)
+
+    fast = graph.shortest_path("g0_0", "g3_3", profile, weights=fast_w)
+    safe = graph.shortest_path("g0_0", "g3_3", profile, weights=safe_w)
+    assert fast is not None and safe is not None
+
+    # Self-consistency: re-pricing a route under its own weighting is its cost.
+    assert graph.path_cost(fast[2], fast_w) == pytest.approx(fast[1])
+    assert graph.path_cost(safe[2], safe_w) == pytest.approx(safe[1])
+
+    # Optimality under a single objective: each solve beats the other route
+    # when both are priced under that solve's own weighting.
+    assert fast[1] <= graph.path_cost(safe[2], fast_w)
+    assert safe[1] <= graph.path_cost(fast[2], safe_w)
+
+    # Re-pricing genuinely moves the number (the routes differ).
+    assert fast[0] != safe[0]
+    assert graph.path_cost(safe[2], fast_w) != pytest.approx(safe[1])
+
+
+def test_path_cost_of_empty_path_is_zero():
+    graph = ur.build_city_quarter(3, grid=3)
+    assert graph.path_cost(()) == 0.0

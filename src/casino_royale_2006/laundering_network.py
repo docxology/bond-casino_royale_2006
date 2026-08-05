@@ -65,11 +65,13 @@ class NetworkReport:
     def as_dict(self) -> dict[str, object]:
         """JSON-serialisable snapshot for provenance and manuscript tokens.
 
-        ``any_flagged`` states only that *some* account cleared
-        :data:`RISK_THRESHOLD`. This module is film-agnostic and deliberately
-        does not decide whether a *named* suspect was caught - callers that
-        care about a specific account must test membership in ``flagged``
-        themselves (``scenarios.network_snapshot`` does exactly that).
+        ``flagged`` and ``top_risk_player`` carry account *names* - whichever
+        accounts this algorithm scored at or above :data:`RISK_THRESHOLD`. What
+        this module never does is decide whether a *particular* suspect was
+        caught: the only verdict field, ``any_flagged``, states solely that
+        *some* account cleared the threshold. A caller that cares about a named
+        account must test membership in ``flagged`` itself
+        (``scenarios.network_snapshot`` does exactly that).
         """
         return {
             "num_players": len(self.players),

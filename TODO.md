@@ -42,6 +42,15 @@ be verified rather than assumed.
       the same account. Each is currently asserted in its own test file; a
       single test that asserts *agreement* would make that claim falsifiable in
       one place instead of inferred from two.
+- [ ] **Sharpen the AA-vs-KK external oracle, or replace it.** The published
+      preflop equity check pins the equity pipeline to +/-2.0 points, which
+      catches gross showdown-comparison defects (`best_hand` taking the worst
+      subset measures 72.6%) but — measured, not assumed — is nearly blind to
+      category-ranking swaps: demoting a full house below a flush moved it 0.03
+      points. Those are caught instead by
+      `test_category_ranking_matches_the_published_order`. An exact preflop
+      enumeration (or a published matchup chosen so category order actually
+      decides it) would make one oracle cover both.
 - [ ] **Negative control on the poker recommendation.** The canonical scenario
       always clears the pot-odds threshold, so the snapshot path has never
       demonstrated a `fold`. A second scenario whose correct answer is `fold`

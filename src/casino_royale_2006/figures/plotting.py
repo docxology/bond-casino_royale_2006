@@ -1,9 +1,14 @@
 """Deterministic figure renderers for the LE CHIFFRE manuscript.
 
-Each renderer takes an explicit output path, draws a real engine-derived
-figure, saves it, and closes the figure - no global pyplot state leaks between
-calls. Backend is forced to ``Agg`` at import so rendering works headless and
-deterministically in CI and on agents.
+Each figure is defined twice over: a ``build_*_figure`` that returns the live
+:class:`~matplotlib.figure.Figure` (so its axes, data, labels and title can be
+inspected and asserted on) and a thin ``render_*`` that saves that figure to an
+explicit output path and closes it - no global pyplot state leaks between
+calls. The split exists so the tests bind figure *content*, not just the
+existence of a non-empty PNG: a plotting regression that still emits bytes has
+to survive assertions on the plotted values themselves. Backend is forced to
+``Agg`` at import so rendering works headless and deterministically in CI and
+on agents.
 
 Figure set:
 
@@ -27,25 +32,30 @@ import matplotlib
 
 matplotlib.use("Agg")  # headless, deterministic - no display backend
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 from casino_royale_2006 import icm, scenarios
 from casino_royale_2006 import poison_detect as pd
 from casino_royale_2006 import poker_cfr as pc
 
 
-def render_poker_decision(
-    output_path: str | Path,
-    snapshot: dict[str, object] | None = None,
-) -> str:
-    """Bar chart of final-hand equity vs. pot-odds break-even, with the call.
-
-    Reads equity/break-even/margin/action from ``snapshot`` (default: the
-    canonical :func:`scenarios.poker_snapshot`). Writes ``output_path`` (PNG)
-    and returns it as a string.
-    """
-    snap = snapshot if snapshot is not None else scenarios.poker_snapshot()
+def _save(fig: Figure, output_path: str | Path) -> str:
+    """Write ``fig`` to ``output_path`` (creating parents) and close it."""
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+    return str(path)
+
+
+def build_poker_decision_figure(snapshot: dict[str, object] | None = None) -> Figure:
+    """Build (but do not save) the equity-vs-price bar chart.
+
+    Split out from :func:`render_poker_decision` so tests can assert on the
+    figure's *content* - bar heights against the snapshot, axis labels, the
+    action in the title - rather than only that a non-empty PNG appeared.
+    """
+    snap = snapshot if snapshot is not None else scenarios.poker_snapshot()
 
     equity = cast(float, snap["equity_pct"])
     break_even = cast(float, snap["break_even_pct"])
@@ -71,22 +81,30 @@ def render_poker_decision(
     )
     ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
-    return str(path)
+    return fig
 
 
-def render_digitalis_curve(output_path: str | Path) -> str:
-    """Digitalis toxicity score vs. serum digoxin, with severity bands shaded.
+def render_poker_decision(
+    output_path: str | Path,
+    snapshot: dict[str, object] | None = None,
+) -> str:
+    """Bar chart of final-hand equity vs. pot-odds break-even, with the call.
+
+    Reads equity/break-even/margin/action from ``snapshot`` (default: the
+    canonical :func:`scenarios.poker_snapshot`). Writes ``output_path`` (PNG)
+    and returns it as a string.
+    """
+    return _save(build_poker_decision_figure(snapshot), output_path)
+
+
+def build_digitalis_curve_figure() -> Figure:
+    """Build (but do not save) the digitalis dose-response curve.
 
     Sweeps digoxin ``0..6`` ng/mL under a neutral panel profile (normal cardiac
     signs, one mild symptom) so the concentration response cleanly traverses
     the none/mild/moderate bands; a genuinely severe panel additionally
     requires the cardiac feature flags, which the prose section explains.
     """
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-
     concentrations = [i / 20.0 for i in range(0, 121)]  # 0.0 .. 6.0
     scores = [
         pd.toxicity_score(
@@ -118,21 +136,20 @@ def render_digitalis_curve(output_path: str | Path) -> str:
     ax.legend(loc="upper left", fontsize="small")
     ax.grid(alpha=0.3)
     fig.tight_layout()
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
-    return str(path)
+    return fig
 
 
-def render_cfr_convergence(output_path: str | Path) -> str:
-    """CFR convergence: average counterfactual regret vs. iteration count.
+def render_digitalis_curve(output_path: str | Path) -> str:
+    """Render the digitalis dose-response curve to ``output_path`` (PNG)."""
+    return _save(build_digitalis_curve_figure(), output_path)
+
+
+def build_cfr_convergence_figure() -> Figure:
+    """Build (but do not save) the CFR regret-vs-iteration curve.
 
     Plots the regret trace from a canonical river-toy solve, showing regret
-    decaying toward zero as CFR approaches the Nash equilibrium. Interpolates
-    to an even iteration axis so short and long solves share a legible curve.
+    decaying toward zero as CFR approaches the Nash equilibrium.
     """
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-
     iters = 240
     result = pc.cfr_solve(scenarios.CFR_STRENGTHS, iters)
     trace = list(result.regret_trace)
@@ -154,21 +171,21 @@ def render_cfr_convergence(output_path: str | Path) -> str:
         fontsize="small",
     )
     fig.tight_layout()
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
-    return str(path)
+    return fig
 
 
-def render_icm_bubble(output_path: str | Path) -> str:
-    """ICM bubble factor by player on the canonical freezeout bubble.
+def render_cfr_convergence(output_path: str | Path) -> str:
+    """Render the CFR convergence curve to ``output_path`` (PNG)."""
+    return _save(build_cfr_convergence_figure(), output_path)
+
+
+def build_icm_bubble_figure() -> Figure:
+    """Build (but do not save) the ICM bubble-factor bar chart.
 
     A bar chart of each player's tournament bubble factor (loss-if-busted over
     gain-if-doubled), labelled by start stack, demonstrating the squeeze that
     makes chips non-linear in prize money.
     """
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-
     stacks = list(scenarios.ICM_STACKS)
     prizes = list(scenarios.ICM_PRIZES)
     factors = [icm.bubble_factor(stacks, prizes, i) for i in range(len(stacks))]
@@ -187,6 +204,9 @@ def render_icm_bubble(output_path: str | Path) -> str:
     ax.legend(loc="upper right", fontsize="small")
     ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
-    return str(path)
+    return fig
+
+
+def render_icm_bubble(output_path: str | Path) -> str:
+    """Render the ICM bubble-factor chart to ``output_path`` (PNG)."""
+    return _save(build_icm_bubble_figure(), output_path)

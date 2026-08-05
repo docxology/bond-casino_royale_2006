@@ -3,15 +3,39 @@
 Zero mocks: exact hand-evaluation vectors, exact turn/river equity, seeded
 Monte-Carlo, pure pot-odds arithmetic, and opponent-model updates over real
 action sequences.
+
+Two checks here are *external* oracles rather than self-consistency checks, and
+they cover different failure modes - measured, not assumed:
+
+* :func:`test_category_ranking_matches_the_published_order` pins the nine hand
+  categories, and the within-category kicker order, against the published
+  hold'em hand ranking. This is the sensitive one: swapping any two category
+  codes, or dropping a kicker from a tiebreak tuple, turns it red.
+* :func:`test_preflop_aa_vs_kk_matches_published_equity` measures heads-up
+  preflop AA-vs-KK equity against the published figure (AA wins 81.71%, ties
+  0.46% -> 81.94% equity). This one covers the *equity pipeline* - sampling,
+  runout construction, showdown comparison. Its measured sensitivity is
+  limited and is stated on the test itself: a defect big enough to break
+  showdown comparison moves it far outside tolerance (``best_hand`` taking the
+  worst subset instead of the best measures 72.6%), but because both players
+  see the same board, several category-ranking swaps move it by under a tenth
+  of a point. Those are the ranking test's job, not this one's.
 """
 
 from __future__ import annotations
 
+import itertools
 import random
 
 import pytest
 
 from casino_royale_2006 import poker_engine as pe
+
+#: Published heads-up preflop equity for AA vs KK (win 81.71% + half of the
+#: 0.46% ties). Source: standard hold'em all-in equity tables (e.g. the
+#: pokerstove/twodimes reference matchup grid); registered in
+#: ``data/claim_ledger.yaml`` as ``poker_aa_vs_kk_preflop``.
+PUBLISHED_AA_VS_KK_EQUITY_PCT = 81.94
 
 
 # ---------------------------------------------------------------- cards ----
@@ -185,13 +209,105 @@ def test_monte_carlo_equity_errors():
         )  # one player
 
 
+#: The published hold'em hand ranking, weakest to strongest, one concrete
+#: five-card example per category. External oracle: the order is the rules of
+#: the game, not anything this package derives.
+PUBLISHED_HAND_RANKING: tuple[tuple[tuple[str, ...], str], ...] = (
+    (("Ad", "Kd", "Qc", "8h", "2s"), "high card"),
+    (("Td", "Ts", "Kc", "4h", "2s"), "one pair"),
+    (("Qd", "Qs", "7c", "7h", "3s"), "two pair"),
+    (("9s", "9d", "9c", "4h", "2s"), "three of a kind"),
+    (("Ah", "2c", "3d", "4s", "5h"), "straight"),
+    (("Ah", "6h", "8h", "3h", "Kh"), "flush"),
+    (("As", "Ad", "Ah", "Kc", "Ks"), "full house"),
+    (("9s", "9d", "9c", "9h", "2c"), "four of a kind"),
+    (("As", "Ks", "Qs", "Js", "Ts"), "straight flush"),
+)
+
+
+def test_category_ranking_matches_the_published_order():
+    """External oracle: the nine categories must order as the rules say.
+
+    One real hand per category, evaluated and then required to be strictly
+    increasing in published order. Swap any two category codes in
+    ``evaluate_5`` - full house below flush, quads scored as trips, a straight
+    scored as a flush - and this goes red immediately. (The AA-vs-KK equity
+    oracle does *not* catch those; see the module docstring.)
+    """
+    values = [pe.evaluate_5(pe.parse_cards(cards)) for cards, _ in PUBLISHED_HAND_RANKING]
+    assert [pe.category_name(v[0]) for v in values] == [name for _, name in PUBLISHED_HAND_RANKING]
+    for weaker, stronger in itertools.pairwise(values):
+        assert weaker < stronger, f"{weaker} should rank below {stronger}"
+
+
+def test_within_category_tiebreaks_follow_the_published_kicker_order():
+    """External oracle: kickers decide, in the published precedence order."""
+    better_worse = (
+        # flush: A-K-Q-J-9 beats A-K-Q-J-8 (last card decides)
+        (("Ah", "Kh", "Qh", "Jh", "9h"), ("Ah", "Kh", "Qh", "Jh", "8h")),
+        # flush: the *highest* card decides first, even when every other card
+        # is worse. A tiebreak tuple built in ascending order gets this wrong.
+        (("Ah", "7h", "5h", "4h", "3h"), ("Ks", "Qs", "Js", "Ts", "8s")),
+        # one pair: same pair, higher first kicker wins
+        (("Td", "Ts", "Ac", "4h", "2s"), ("Td", "Ts", "Kc", "4h", "2s")),
+        # one pair: same pair and first two kickers, last kicker decides
+        (("Td", "Ts", "Kc", "4h", "3s"), ("Td", "Ts", "Kc", "4h", "2s")),
+        # two pair: same two pairs, kicker decides
+        (("Qd", "Qs", "7c", "7h", "Ks"), ("Qd", "Qs", "7c", "7h", "3s")),
+        # two pair: higher top pair beats higher kicker
+        (("Kd", "Ks", "3c", "3h", "2s"), ("Qd", "Qs", "Jc", "Jh", "As")),
+        # straight: higher top card wins (and the wheel is the lowest)
+        (("6h", "5c", "4d", "3s", "2h"), ("Ah", "5c", "4d", "3s", "2h")),
+    )
+    for better, worse in better_worse:
+        hi = pe.evaluate_5(pe.parse_cards(better))
+        lo = pe.evaluate_5(pe.parse_cards(worse))
+        assert hi > lo, f"{better} should beat {worse} (got {hi} vs {lo})"
+
+
+def test_preflop_aa_vs_kk_matches_published_equity():
+    """External oracle: measured AA-vs-KK preflop equity vs. the published value.
+
+    Averaged over all 6x6 suit combinations (suit overlap moves a single
+    matchup by more than a point, so a single combination is not the published
+    number). Seeded, hence deterministic; 200 runouts per matchup gives a
+    standard error near 0.46 points, and the +/-2.0 tolerance is ~4 s.e., wide
+    enough never to flake.
+
+    Scope, measured rather than asserted: this covers the equity pipeline
+    end to end - sampling, runout construction, showdown comparison. Making
+    ``best_hand`` select the worst five-card subset instead of the best drops
+    the measurement to 72.6% and turns this red. It is *not* sensitive to
+    category-ranking swaps (both players see the same board, so most of the
+    error cancels): demoting a full house below a flush moved it by 0.03
+    points. Those defects are caught by
+    :func:`test_category_ranking_matches_the_published_order`.
+    """
+    aces = [pe.parse_card("A" + s) for s in pe.SUIT_CHARS]
+    kings = [pe.parse_card("K" + s) for s in pe.SUIT_CHARS]
+    rng = random.Random(11)
+    total_equity = 0.0
+    matchups = 0
+    for hero in itertools.combinations(aces, 2):
+        for villain in itertools.combinations(kings, 2):
+            (win, tie), _villain = pe.monte_carlo_equity((hero, villain), (), 200, rng)
+            total_equity += win + tie / 2.0
+            matchups += 1
+    assert matchups == 36
+    measured_pct = 100.0 * total_equity / matchups
+    assert measured_pct == pytest.approx(PUBLISHED_AA_VS_KK_EQUITY_PCT, abs=2.0), (
+        f"measured AA-vs-KK preflop equity {measured_pct:.2f}% is not the "
+        f"published {PUBLISHED_AA_VS_KK_EQUITY_PCT}%"
+    )
+
+
 # --------------------------------------------------------- equity vs range ----
 def test_equity_vs_range_positive_and_deterministic():
     hole = pe.parse_cards(["Kh", "Kc"])
     board = pe.parse_cards(["As", "7h", "2d"])
     dead = set(hole) | set(board)
     rng = random.Random(3)
-    opps = list(pe.iter_opponent_hands(tuple(pe.RANGE_ARCHETYPES["tight"]), dead, rng, 8))
+    opps = list(pe.iter_opponent_hands(tuple(sorted(pe.RANGE_ARCHETYPES["tight"])), dead, rng, 8))
     e1 = pe.equity_vs_range(hole, opps, board, 200, random.Random(4))
     e2 = pe.equity_vs_range(hole, opps, board, 200, random.Random(4))
     assert e1 == e2
@@ -295,3 +411,57 @@ def test_range_archetype_keys_and_raise_margins():
     assert pe.recommended_raise_margin("loose-aggressive") == 0.10
     assert pe.recommended_raise_margin("tight-aggressive") == 0.14
     assert pe.recommended_raise_margin("tight-passive") == 0.10
+
+
+def test_archetype_range_map_covers_every_label_archetype_can_emit():
+    """The label vocabulary and the range-selection table must not drift apart.
+
+    ``archetype()`` builds its label from two binary splits; this enumerates
+    both splits over real ``OpponentModel`` histories and requires the mapping
+    table to have an entry for each label actually produced.
+    """
+    histories = {
+        "loose-aggressive": ("raise", "raise", "call"),
+        "loose-passive": ("call", "call", "call"),
+        "tight-passive": ("call", "fold", "fold", "fold"),
+        "tight-aggressive": ("raise", "fold", "fold", "fold"),
+    }
+    produced = set()
+    for expected_label, actions in histories.items():
+        model = pe.OpponentModel(name="x")
+        for action in actions:
+            model.update(action)
+        assert model.archetype() == expected_label
+        produced.add(model.archetype())
+    assert produced == set(pe.ARCHETYPE_RANGE_KEYS)
+    assert set(pe.ARCHETYPE_RANGE_KEYS.values()) == set(pe.RANGE_ARCHETYPES)
+
+
+def test_range_for_archetype_selects_the_matching_range():
+    assert pe.range_key_for_archetype("loose-aggressive") == "loose"
+    assert pe.range_key_for_archetype("tight-passive") == "tight"
+    assert pe.range_for_archetype("loose-passive") is pe.RANGE_ARCHETYPES["loose"]
+    assert pe.range_for_archetype("tight-aggressive") is pe.RANGE_ARCHETYPES["tight"]
+    # The two ranges are genuinely different, so selection is observable.
+    assert pe.RANGE_ARCHETYPES["loose"] > pe.RANGE_ARCHETYPES["tight"]
+
+
+def test_unknown_archetype_is_rejected_everywhere():
+    for func in (pe.range_key_for_archetype, pe.range_for_archetype, pe.recommended_raise_margin):
+        with pytest.raises(KeyError):
+            func("maniac")
+
+
+def test_raise_margin_changes_the_recommended_action():
+    """The archetype-driven margin must be capable of flipping the decision.
+
+    Equity margin here is exactly 0.10: above the loose-passive threshold
+    (0.06 -> raise), below the tight-aggressive one (0.14 -> call). If
+    ``recommend_action`` ignored ``raise_margin`` both lines would agree.
+    """
+    pot, to_call, equity = 4.0, 1.0, 0.30
+    assert pe.equity_margin(equity, pot, to_call) == pytest.approx(0.10)
+    loose = pe.recommended_raise_margin("loose-passive")
+    tight = pe.recommended_raise_margin("tight-aggressive")
+    assert pe.recommend_action(pot, to_call, equity, raise_margin=loose) == "raise"
+    assert pe.recommend_action(pot, to_call, equity, raise_margin=tight) == "call"

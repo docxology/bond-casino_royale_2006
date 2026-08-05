@@ -7,13 +7,16 @@ Every number below is a `TOKEN` placeholder, injected at manuscript time.
 ## The felt: equity, price, and decision
 
 On the board `{{POKER_BOARD}}`, the hero holds `{{POKER_HERO}}` against
-Le Chiffre's `{{POKER_RANGE}}` range. The engine prices a
-Monte-Carlo equity of **{{POKER_EQUITY_PCT}}%** against a pot-odds break-even
-of **{{POKER_BREAK_EVEN_PCT}}%** (pot {{POKER_POT}}, to call
-{{POKER_TO_CALL}}). The resulting margin, **{{POKER_MARGIN_PCT}}%**, clears the
-value threshold, so the model recommends **{{POKER_ACTION}}** — the
-traditionally correct play when the price the pot lays exceeds the probability
-of winning. Figure [@fig:poker] visualizes the equity-vs-price comparison.
+Le Chiffre's `{{POKER_RANGE}}` range — the range his observed
+**{{POKER_OPPONENT_ARCHETYPE}}** tendencies select, not a hand-picked one. The
+engine prices a Monte-Carlo equity of **{{POKER_EQUITY_PCT}}%** against a
+pot-odds break-even of **{{POKER_BREAK_EVEN_PCT}}%** (pot {{POKER_POT}}, to
+call {{POKER_TO_CALL}}). The resulting margin, **{{POKER_MARGIN_PCT}}%**,
+clears the {{POKER_RAISE_MARGIN_PCT}}% raise threshold that same archetype
+implies, so the model recommends **{{POKER_ACTION}}**: the probability of
+winning exceeds the price the pot is laying, and by enough to raise for value
+rather than merely call. Figure [@fig:poker] visualizes the equity-vs-price
+comparison.
 
 ![Poker decision: hero equity vs. pot-odds break-even with the resulting
 action.](../output/figures/poker_decision.png){#fig:poker}
@@ -31,11 +34,21 @@ stake.
 ## The terrain: parkour extraction route
 
 On the `{{ROUTE_GRID}}×{{ROUTE_GRID}}` city quarter (**{{ROUTE_NODES}}** nodes,
-**{{ROUTE_EDGES}}** directed edges) the planner returns two routes. The
-*fastest* route short-cuts across the rooftops at cost **{{ROUTE_FASTEST_COST}}**
-(uses rooftops: **{{ROUTE_FASTEST_ROOF}}**); the *safest*, risk-priced route
-stays on the ground at cost **{{ROUTE_SAFEST_COST}}**. This reproduces the
-film's trade-off literally: the roof is faster, the street is safer.
+**{{ROUTE_EDGES}}** directed edges) the planner is run twice, under two
+different objective functions. The *fastest* (speed-weighted) solve short-cuts
+across the rooftops (uses rooftops: **{{ROUTE_FASTEST_ROOF}}**); the *safest*
+(risk-weighted) solve stays on the ground.
+
+Their headline costs — **{{ROUTE_FASTEST_COST}}** and
+**{{ROUTE_SAFEST_COST}}** — are *not* comparable: each is measured under its
+own weighting, so the smaller number does not mean the cheaper route. Priced
+under one objective at a time, the ordering is unambiguous. Under the speed
+weighting the rooftop route costs **{{ROUTE_FASTEST_COST}}** against the ground
+route's **{{ROUTE_SAFEST_COST_UNDER_FAST}}**; under the risk weighting the
+ground route costs **{{ROUTE_SAFEST_COST}}** against the rooftop route's
+**{{ROUTE_FASTEST_COST_UNDER_SAFE}}**. Each route is optimal only under its own
+objective, which is the film's trade-off stated exactly: the roof is faster,
+the street is safer, and no single number ranks them.
 
 ## The martini: digitalis triage
 

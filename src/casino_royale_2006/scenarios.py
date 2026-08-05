@@ -25,6 +25,7 @@ is already seed-invariant. Each docstring states this explicitly.
 from __future__ import annotations
 
 import random
+from collections.abc import Sequence
 
 from casino_royale_2006 import (
     icm,
@@ -54,19 +55,53 @@ from casino_royale_2006 import (
 #: Fixed determinism seed for every snapshot in this film.
 SEED = 17
 
-#: Canonical final-hand scenario (generic hero vs. Le Chiffre's tight range).
+#: Canonical final-hand scenario. The opponent's range is *not* a constant: it
+#: is selected from his observed action history (:data:`BAYES_HISTORY`) through
+#: ``OpponentModel.archetype`` -> ``poker_engine.range_for_archetype``, which is
+#: the whole point of carrying an opponent model.
 POKER_HERO: tuple[str, str] = ("Kh", "Kc")
 POKER_BOARD: tuple[str, str, str] = ("As", "7h", "2d")
-POKER_RANGE_ARCHETYPE: str = "tight"
 POKER_RANGE_HANDS: int = 24
 POKER_SIMULATIONS: int = 2400
 POKER_POT: float = 5_000_000.0
 POKER_TO_CALL: float = 1_000_000.0
 
+#: Canonical opponent-action history observed of Le Chiffre (aggressive). It
+#: feeds both the frequentist ``OpponentModel`` (range selection, above) and the
+#: Bayesian archetype posterior (:func:`bayes_snapshot`).
+BAYES_HISTORY: tuple[str, ...] = (
+    "raise",
+    "raise",
+    "bet",
+    "raise",
+    "call",
+    "raise",
+    "bet",
+    "raise",
+    "raise",
+    "raise",
+)
+
+
+def observed_opponent_model(name: str = "LeChiffre") -> pe.OpponentModel:
+    """The frequentist tendency model built from :data:`BAYES_HISTORY`."""
+    model = pe.OpponentModel(name=name)
+    for action in BAYES_HISTORY:
+        model.update(action)
+    return model
+
+
+#: The compound archetype the observed history implies, and the
+#: :data:`poker_engine.RANGE_ARCHETYPES` key it selects. Both are derived, never
+#: hand-set - change the history and these move with it.
+POKER_OPPONENT_ARCHETYPE: str = observed_opponent_model().archetype()
+POKER_RANGE_ARCHETYPE: str = pe.range_key_for_archetype(POKER_OPPONENT_ARCHETYPE)
+
 #: Scenario dict (opaque payload used by the mission adapter/provenance hash).
 POKER_SCENARIO: dict[str, object] = {
     "hero": POKER_HERO,
     "board": POKER_BOARD,
+    "opponent_archetype": POKER_OPPONENT_ARCHETYPE,
     "range_archetype": POKER_RANGE_ARCHETYPE,
     "range_hands": POKER_RANGE_HANDS,
     "simulations": POKER_SIMULATIONS,
@@ -83,6 +118,10 @@ LAUNDERER = "LeChiffre"
 ROUTE_GRID = 6
 ROUTE_FROM = "g0_0"
 ROUTE_TO = "g5_5"
+#: The two objective functions the route planner is run under: (distance,
+#: difficulty, risk) weights for "get there fast" and "don't get shot".
+ROUTE_FAST_WEIGHTS: tuple[float, float, float] = (1.0, 0.3, 0.3)
+ROUTE_SAFE_WEIGHTS: tuple[float, float, float] = (0.1, 0.4, 1.0)
 
 #: Canonical poison scenario (a martini tray with one spiked glass).
 POISON_N_SAMPLES = 5
@@ -100,27 +139,26 @@ ICM_TO_CALL = 400
 ICM_WIN_PROB = 0.30
 ICM_POT_AFTER_CALL = 1800
 
-#: Canonical opponent-action history observed of Le Chiffre (aggressive).
-BAYES_HISTORY: tuple[str, ...] = (
-    "raise",
-    "raise",
-    "bet",
-    "raise",
-    "call",
-    "raise",
-    "bet",
-    "raise",
-    "raise",
-    "raise",
-)
-
 
 def poker_snapshot(seed: int = SEED) -> dict[str, object]:
-    """Compute the final-hand equity, pot-odds price, and recommended action."""
+    """Compute the final-hand equity, pot-odds price, and recommended action.
+
+    The opponent's range and the raise threshold are both derived from his
+    observed tendencies: ``OpponentModel.archetype()`` on :data:`BAYES_HISTORY`
+    picks the :data:`poker_engine.RANGE_ARCHETYPES` range through
+    :func:`poker_engine.range_for_archetype` and the ``raise_margin`` through
+    :func:`poker_engine.recommended_raise_margin`.
+    """
     rng = random.Random(seed)
     hero = pe.parse_cards(POKER_HERO)
     board = pe.parse_cards(POKER_BOARD)
-    opp_classes = tuple(pe.RANGE_ARCHETYPES[POKER_RANGE_ARCHETYPE])
+    # `sorted`, not bare `tuple`: RANGE_ARCHETYPES values are frozensets, and
+    # frozenset iteration order over strings depends on PYTHONHASHSEED. Bare
+    # `tuple(...)` therefore fed `iter_opponent_hands` a different class order
+    # in every process, and the published equity moved run to run (37.7-49.4%)
+    # while the provenance input_hash stayed identical - a silent audit hole.
+    opp_range = pe.range_for_archetype(POKER_OPPONENT_ARCHETYPE)
+    opp_classes = tuple(sorted(opp_range))
     dead = set(hero) | set(board)
     opp_hands = list(pe.iter_opponent_hands(opp_classes, dead, rng, count=POKER_RANGE_HANDS))
     equity = pe.equity_vs_range(
@@ -132,13 +170,18 @@ def poker_snapshot(seed: int = SEED) -> dict[str, object]:
     )
     pot = POKER_POT
     to_call = POKER_TO_CALL
+    raise_margin = pe.recommended_raise_margin(POKER_OPPONENT_ARCHETYPE)
     break_even = pe.break_even_equity(pot, to_call)
     margin = pe.equity_margin(equity, pot, to_call)
-    action = pe.recommend_action(pot, to_call, equity)
+    action = pe.recommend_action(pot, to_call, equity, raise_margin=raise_margin)
     return {
         "hero": "".join(POKER_HERO),
         "board": " ".join(POKER_BOARD),
         "range": POKER_RANGE_ARCHETYPE,
+        "opponent_archetype": POKER_OPPONENT_ARCHETYPE,
+        "range_classes": len(opp_range),
+        "range_hands": POKER_RANGE_HANDS,
+        "raise_margin_pct": round(raise_margin * 100.0, 2),
         "equity_pct": round(equity * 100.0, 2),
         "break_even_pct": round(break_even * 100.0, 2),
         "margin_pct": round(margin * 100.0, 2),
@@ -170,21 +213,35 @@ def route_snapshot(seed: int = SEED) -> dict[str, object]:
     The agent is profiled as a skilled free-runner (can climb the 12 m parapet
     and drop off the roof), so the fastest route legitimately shortcuts
     rooftops while the risk-priced route stays on the ground.
+
+    The two routes are optimal under *different* objective functions
+    (:data:`ROUTE_FAST_WEIGHTS` vs. :data:`ROUTE_SAFE_WEIGHTS`), so their own
+    costs are in different units and are not comparable. Each route is therefore
+    also re-priced under the *other* weighting (``*_under_*`` keys); those are
+    the pairs a reader may legitimately compare.
     """
     graph = ur.build_city_quarter(seed, grid=ROUTE_GRID)
     profile = ur.ParkourProfile(max_climb=13.0, max_drop=13.0)
-    fastest = graph.shortest_path(ROUTE_FROM, ROUTE_TO, profile, weights=(1.0, 0.3, 0.3))
-    safest = graph.shortest_path(ROUTE_FROM, ROUTE_TO, profile, weights=(0.1, 0.4, 1.0))
+    fastest = graph.shortest_path(ROUTE_FROM, ROUTE_TO, profile, weights=ROUTE_FAST_WEIGHTS)
+    safest = graph.shortest_path(ROUTE_FROM, ROUTE_TO, profile, weights=ROUTE_SAFE_WEIGHTS)
+    if fastest is None or safest is None:  # pragma: no cover - grid is connected
+        raise RuntimeError("canonical city quarter must be traversable under both objectives")
     return {
         "grid": ROUTE_GRID,
         "nodes": len(graph.nodes),
         "edges": len(graph.edges),
-        "fastest_cost": round(fastest[1], 2) if fastest else None,
-        "fastest_length": len(fastest[0]) - 1 if fastest else None,
-        "fastest_uses_roof": any(n.startswith("r") for n in fastest[0]) if fastest else False,
-        "safest_cost": round(safest[1], 2) if safest else None,
-        "safest_length": len(safest[0]) - 1 if safest else None,
-        "safest_uses_roof": any(n.startswith("r") for n in safest[0]) if safest else False,
+        "fast_weights": list(ROUTE_FAST_WEIGHTS),
+        "safe_weights": list(ROUTE_SAFE_WEIGHTS),
+        "fastest_cost": round(fastest[1], 2),
+        "fastest_length": len(fastest[0]) - 1,
+        "fastest_uses_roof": any(n.startswith("r") for n in fastest[0]),
+        "safest_cost": round(safest[1], 2),
+        "safest_length": len(safest[0]) - 1,
+        "safest_uses_roof": any(n.startswith("r") for n in safest[0]),
+        # Cross-priced: same route, other objective. These make the comparison
+        # commensurable instead of juxtaposing two incomparable numbers.
+        "safest_cost_under_fast": round(graph.path_cost(safest[2], ROUTE_FAST_WEIGHTS), 2),
+        "fastest_cost_under_safe": round(graph.path_cost(fastest[2], ROUTE_SAFE_WEIGHTS), 2),
     }
 
 
@@ -254,6 +311,20 @@ def icm_snapshot(seed: int = SEED) -> dict[str, object]:
     }
 
 
+def named_verdict(flagged: Sequence[str], name: str = LAUNDERER) -> bool:
+    """Whether a *named* account is in a flagged set.
+
+    This is the film-specific verdict rule, deliberately living here rather
+    than in the film-agnostic :mod:`laundering_network`. It is a named function
+    (not an inline expression) so a test can drive it with a flow whose flagged
+    account is *somebody else* and prove it answers False there - the failure
+    mode being guarded against is silently degrading this to
+    ``bool(report.flagged)``, which would report "caught" for any flow that
+    flags anyone at all.
+    """
+    return name in flagged
+
+
 def network_snapshot(seed: int = SEED) -> dict[str, object]:
     """Run the structural (network-level) laundering detector on the canonical flow."""
     flow = ld.synthetic_flow(seed, num_players=LAUNDERING_PLAYERS, ticks=LAUNDERING_TICKS)
@@ -266,7 +337,7 @@ def network_snapshot(seed: int = SEED) -> dict[str, object]:
         {
             # Named-suspect verdict, decided here rather than in the film-agnostic
             # network module: the launderer specifically, not "somebody".
-            "launderer_flagged": LAUNDERER in report.flagged,
+            "launderer_flagged": named_verdict(report.flagged),
             "launderer_risk": round(report.risk.get(LAUNDERER, 0.0), 3),
             "launderer_hhi": round(report.hhi.get(LAUNDERER, 0.0), 3),
             "top_centrality_player": top_centrality,

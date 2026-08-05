@@ -567,16 +567,68 @@ RANGE_ARCHETYPES: dict[str, frozenset[str]] = {
 }
 
 
-def recommended_raise_margin(archetype: str) -> float:
-    """Suggested value-extraction raise threshold for a range archetype.
+#: Which :data:`RANGE_ARCHETYPES` key each compound tendency label plays.
+#: :meth:`OpponentModel.archetype` emits the compound labels (looseness +
+#: aggression); the ranges are keyed on looseness alone, so this table is the
+#: explicit bridge between the two vocabularies. It is exhaustive over the four
+#: labels ``archetype()`` can produce - a gate in ``tests/test_poker_engine.py``
+#: pins that.
+ARCHETYPE_RANGE_KEYS: dict[str, str] = {
+    "tight-passive": "tight",
+    "tight-aggressive": "tight",
+    "loose-passive": "loose",
+    "loose-aggressive": "loose",
+}
 
-    Against a loose-passive station we extract more (raise earlier); against a
-    tight-aggressive hand we thin the range by raising less often.
+
+def range_key_for_archetype(archetype: str) -> str:
+    """The :data:`RANGE_ARCHETYPES` key a compound archetype label plays.
+
+    Args:
+        archetype: a compound label as returned by
+            :meth:`OpponentModel.archetype`, e.g. ``"loose-aggressive"``.
+
+    Returns:
+        ``"tight"`` or ``"loose"``.
+
+    Raises:
+        KeyError: if ``archetype`` is not one of the four compound labels.
     """
+    try:
+        return ARCHETYPE_RANGE_KEYS[archetype]
+    except KeyError:
+        raise KeyError(
+            f"unknown archetype {archetype!r}; expected one of "
+            f"{', '.join(sorted(ARCHETYPE_RANGE_KEYS))}"
+        ) from None
+
+
+def range_for_archetype(archetype: str) -> frozenset[str]:
+    """The starting-hand class range implied by a compound archetype label.
+
+    This is the selection step the opponent model exists to drive: observed
+    tendencies -> compound archetype -> one of the two :data:`RANGE_ARCHETYPES`
+    ranges -> the concrete hands :func:`equity_vs_range` is run against.
+    """
+    return RANGE_ARCHETYPES[range_key_for_archetype(archetype)]
+
+
+def recommended_raise_margin(archetype: str) -> float:
+    """Suggested value-extraction raise threshold for a compound archetype.
+
+    Passed as ``raise_margin`` to :func:`recommend_action`. Against a
+    loose-passive station we extract more (raise earlier, 0.06); against a
+    tight-aggressive opponent we thin the raising range (0.14); the two
+    remaining labels sit at the 0.10 default. ``scenarios.poker_snapshot`` is
+    the live caller - the canonical hand is priced with the margin the observed
+    archetype implies, not a fixed constant.
+
+    Raises:
+        KeyError: if ``archetype`` is not one of the four compound labels.
+    """
+    range_key_for_archetype(archetype)  # reject labels archetype() cannot emit
     if archetype == "loose-passive":
         return 0.06
-    if archetype == "loose-aggressive":
-        return 0.10
     if archetype == "tight-aggressive":
         return 0.14
     return 0.10

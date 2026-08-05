@@ -30,9 +30,17 @@ comparison is exact and lexicographic. Equity comes two ways:
 RNG); `monte_carlo_equity` samples runouts for N players through a
 caller-supplied seeded RNG. `break_even_equity`, `ev_of_call`, `equity_margin`,
 and `recommend_action` turn that into the pot-odds decision. `OpponentModel`
-tallies observed actions into VPIP and an aggression factor, which selects one
-of the `RANGE_ARCHETYPES` starting-hand ranges; `equity_vs_range` averages hero
-equity over concrete pairs drawn from that range.
+tallies observed actions into VPIP and an aggression factor, and
+`archetype()` reduces those to one of four compound labels
+(`tight`/`loose` × `passive`/`aggressive`). `ARCHETYPE_RANGE_KEYS` /
+`range_key_for_archetype` is the bridge from those four labels to the two
+`RANGE_ARCHETYPES` keys (`tight`, `loose`), and `range_for_archetype` returns
+the range itself; `recommended_raise_margin` maps the same label to a
+`recommend_action` raise threshold. `scenarios.poker_snapshot` is the live
+caller of all three: the canonical hand's range *and* raise threshold are
+derived from Le Chiffre's observed history, not set by hand.
+`equity_vs_range` averages hero equity over concrete pairs drawn from the
+selected range.
 
 ### `poker_cfr.py` — counterfactual regret minimization
 
@@ -81,10 +89,16 @@ power iteration over the flow matrix), `label_propagation` (deterministic
 communities, ties broken by smallest label id), and `conservation_imbalance`
 (cash out + transfers against cash in). `network_risk_report` multiplies
 value-neutrality by turnover share and flags accounts at or above
-`RISK_THRESHOLD`. It is deliberately **film-agnostic**: `NetworkReport.as_dict`
-reports only `any_flagged`, never a named suspect. Deciding whether *Le
-Chiffre* was caught is the caller's job, done explicitly in
-`scenarios.network_snapshot`.
+`RISK_THRESHOLD`. It is **film-agnostic** in one precise sense: no
+film-specific name is written anywhere in the module, and no output field
+asserts that a particular suspect was caught. `NetworkReport.as_dict` *does*
+surface account names — `flagged` and `top_risk_player` are whatever accounts
+the algorithm itself scored above threshold, and on the canonical flow that
+happens to be `LeChiffre` — but its only verdict field, `any_flagged`, means
+"somebody", never "Le Chiffre". Deciding whether *Le Chiffre* specifically was
+caught is the caller's job (membership in `flagged`), done explicitly in
+`scenarios.network_snapshot` and pinned by the negative control in
+`tests/test_laundering_network.py`, where the flagged account is somebody else.
 
 ### `urban_routes.py` — parkour mobility routing
 
@@ -96,6 +110,10 @@ it. `shortest_path` is Dijkstra over **feasible edges only**, minimising
 cost ties so equal-cost routes are reproducible. `brute_force_path`
 exhaustively enumerates simple paths and is the ground truth the tests check
 Dijkstra against. `build_city_quarter` builds the seeded ground+roof grid.
+`path_cost` re-prices an already-found route under a different weighting —
+required because two routes optimised under two different weightings carry
+costs in different units, so `scenarios.route_snapshot` publishes each route
+under both objectives instead of juxtaposing incomparable totals.
 
 ### `poison_detect.py` — digitalis triage
 

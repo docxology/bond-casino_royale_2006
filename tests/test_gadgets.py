@@ -22,7 +22,7 @@ def test_catalogue_is_non_empty():
 
 
 def test_names_match_mapping_keys_in_order():
-    assert gadgets.GADGET_NAMES == tuple(gadgets.GADGETS)
+    assert tuple(gadgets.GADGETS) == gadgets.GADGET_NAMES
 
 
 def test_every_gadget_is_callable():

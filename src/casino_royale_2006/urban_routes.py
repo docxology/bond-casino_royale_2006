@@ -153,6 +153,23 @@ class MobilityGraph:
         wd, wf, wr = weights
         return wd * edge.distance + wf * edge.difficulty + wr * edge.risk
 
+    def path_cost(
+        self,
+        edges: tuple[UrbanEdge, ...],
+        weights: tuple[float, float, float] = DEFAULT_WEIGHTS,
+    ) -> float:
+        """Total weighted cost of an existing edge path under ``weights``.
+
+        :meth:`shortest_path` returns the cost of the route it found *under the
+        weighting it optimised*. Two routes found under two different weightings
+        therefore carry costs measured in different units and must never be
+        compared directly. This re-prices any route under any weighting, which
+        is what makes such a comparison meaningful (``scenarios.route_snapshot``
+        uses it to price the ground route under the speed objective and vice
+        versa).
+        """
+        return sum(self._cost(edge, weights) for edge in edges)
+
     def shortest_path(
         self,
         start: str,

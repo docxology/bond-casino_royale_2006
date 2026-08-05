@@ -6,7 +6,11 @@ from datetime import datetime, timezone
 
 import pytest
 
+from casino_royale_2006 import laundering_network as ln
 from casino_royale_2006 import manuscript_variables as mv
+from casino_royale_2006 import poker_engine as pe
+from casino_royale_2006 import scenarios
+from casino_royale_2006.laundering_detect import ChipTransaction, synthetic_flow
 
 
 def test_load_mission_config_default():
@@ -132,12 +136,54 @@ def test_concept_module_tokens_match_the_shipped_modules():
         assert (src / f"{module}.py").is_file(), f"{module}.py named in tokens but missing"
 
 
-def test_net_flagged_token_is_the_named_verdict():
-    """NET_FLAGGED must reflect the launderer specifically, not "somebody"."""
+def test_net_flagged_token_is_a_named_verdict_not_merely_any_flagged():
+    """NET_FLAGGED must mean "LeChiffre was flagged", not "somebody was".
+
+    The previous version of this gate compared the token against the same
+    snapshot function that produced it, so it could not fail. This drives the
+    *production* verdict rule (``scenarios.named_verdict``, the exact callable
+    ``network_snapshot`` uses) with a negative control: a flow whose only
+    flagged account is somebody else. There ``any_flagged`` is True while the
+    named verdict is False. Degrade the rule to ``bool(report.flagged)`` - the
+    laundering this token invites - and the negative control goes red.
+    """
+    ghost_flow = (
+        ChipTransaction("cage", "ghost", 10_000.0, 0, "cash_in"),
+        ChipTransaction("ghost", "cage", 10_000.0, 1, "cash_out"),
+    )
+    ghost_report = ln.network_risk_report(ghost_flow)
+    assert ghost_report.as_dict()["any_flagged"] is True  # somebody was flagged
+    assert scenarios.named_verdict(ghost_report.flagged) is False  # ...but not him
+
+    # On the canonical flow the same rule answers True, and that - not
+    # any_flagged - is what the published token carries.
+    canonical = ln.network_risk_report(
+        synthetic_flow(
+            scenarios.SEED,
+            num_players=scenarios.LAUNDERING_PLAYERS,
+            ticks=scenarios.LAUNDERING_TICKS,
+        )
+    )
+    assert scenarios.named_verdict(canonical.flagged) is True
+    assert mv.generate_variables()["NET_FLAGGED"] == "yes"
+
+
+def test_poker_range_tokens_are_derived_from_the_real_range_table():
+    """POKER_RANGE_CLASSES must count the shipped range, never a prose numeral.
+
+    The manuscript once claimed 169 canonical hand classes (the size of the
+    full hold'em starting-hand space) for a table that enumerates far fewer.
+    This binds the token to ``RANGE_ARCHETYPES`` itself.
+    """
     variables = mv.generate_variables()
-    snap = mv.scenarios.network_snapshot()
-    expected = "yes" if snap["launderer_flagged"] else "no"
-    assert variables["NET_FLAGGED"] == expected
+    archetype = variables["POKER_OPPONENT_ARCHETYPE"]
+    selected = pe.range_for_archetype(archetype)
+    assert variables["POKER_RANGE"] == pe.range_key_for_archetype(archetype)
+    assert variables["POKER_RANGE_CLASSES"] == str(len(selected))
+    assert int(variables["POKER_RANGE_CLASSES"]) < 169  # not the full class space
+    assert variables["POKER_RAISE_MARGIN_PCT"] == mv._fmt(
+        round(100.0 * pe.recommended_raise_margin(archetype), 2)
+    )
 
 
 def test_resolve_manuscript_tree(tmp_path):

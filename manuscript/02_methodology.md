@@ -31,11 +31,19 @@ final hand.
 
 **Opponent modelling.** An `OpponentModel` records observed `raise`/`bet`/
 `call`/`fold` actions and derives VPIP and an aggression factor
-`(raises + bets) / calls`. Tendencies map to a `tight`/`loose`-`passive`/
-`aggressive` archetype, which selects a starting-hand range (`RANGE_ARCHETYPES`
-of 169 canonical hand classes). `equity_vs_range` then averages the hero's
-Monte-Carlo equity over concrete opponent pairs sampled from that range — the
-number the agent compares to the pot-odds price.
+`(raises + bets) / calls`. `archetype()` maps those two statistics to one of
+four compound labels (`tight`/`loose` × `passive`/`aggressive`);
+`range_key_for_archetype` then maps that label onto one of the two
+`RANGE_ARCHETYPES` starting-hand ranges — `tight` and `loose`, hand-enumerated
+as starting-hand *classes* (`AA`, `AKs`, `T9o`, …) rather than the full
+169-class hold'em space. On the canonical scenario Le Chiffre's observed
+history reads **{{POKER_OPPONENT_ARCHETYPE}}**, selecting the
+**{{POKER_RANGE}}** range of {{POKER_RANGE_CLASSES}} classes, from which
+{{POKER_RANGE_HANDS}} concrete pairs are drawn. `equity_vs_range` then averages
+the hero's Monte-Carlo equity over those pairs — the number the agent compares
+to the pot-odds price. The same label also sets the raise threshold, via
+`recommended_raise_margin` ({{POKER_RAISE_MARGIN_PCT}}% here), which is passed
+to `recommend_action` as `raise_margin`.
 
 ## Chip-movement laundering detection (`laundering_detect.py`)
 
@@ -70,6 +78,13 @@ runs **Dijkstra over only the feasible edges**, minimizing a weighted cost
 cost ties so identical-cost routes are reproducible. `brute_force_path`
 exhaustively enumerates every simple path on small graphs and serves as ground
 truth the Dijkstra output is verified against.
+
+A route's reported cost is only meaningful *under the weighting that produced
+it*: a speed-weighted and a risk-weighted solve return numbers in different
+units, so their totals are not comparable. `MobilityGraph.path_cost` re-prices
+an existing route under any weighting, and the results section uses it to state
+both routes under both objectives rather than juxtaposing two incommensurable
+totals.
 
 ## Digitalis poison triage (`poison_detect.py`)
 

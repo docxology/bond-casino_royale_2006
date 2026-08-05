@@ -23,9 +23,12 @@ if the bond-api path dependency is missing. `mission.py` is the ONLY module in
 `src/` that imports `bond_api`.
 
 A corollary that has already bitten once: a **film-agnostic** core module must
-not encode this film's suspect. `laundering_network.py` reports `any_flagged`;
-whether *Le Chiffre* specifically was caught is decided by the caller in
-`scenarios.network_snapshot`. *Consequence of violating:* a field named for one
+not encode this film's suspect. `laundering_network.py` may name whichever
+accounts *its own scoring* flagged (`flagged`, `top_risk_player`), but its only
+verdict field is `any_flagged`, which means "somebody" — never "Le Chiffre".
+Whether *Le Chiffre* specifically was caught is decided by the caller, in
+`scenarios.named_verdict`, and pinned by a negative control that feeds it a
+flow flagging somebody else. *Consequence of violating:* a field named for one
 account that actually means "somebody" — a claim that reads stronger than it
 is.
 

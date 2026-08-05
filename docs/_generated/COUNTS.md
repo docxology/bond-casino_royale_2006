@@ -9,7 +9,7 @@ uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 
 ## Test suite
 
-- **172 tests passed**, 0 skipped, 0 failed (2026-08-04, Python 3.14.6).
+- **190 tests passed**, 0 skipped, 0 failed (2026-08-05, Python 3.14.6).
 - Zero mocks: no `unittest.mock` / `MagicMock` / `@patch` / `create_autospec`
   in `tests/` or `src/`.
 - Deterministic: fixed seeds, seeded RNG, fully enumerated CFR / ICM / Bayesian
@@ -17,7 +17,7 @@ uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 
 ## Coverage on `src/`
 
-- **97.10%** line + branch (gate: `--cov-fail-under=90`), `branch = true`.
+- **97.13%** line + branch (gate: `--cov-fail-under=90`), `branch = true`.
 - At 100%: `mission.py`, `scenarios.py`, `gadgets.py`, `poison_detect.py`,
   `figures/plotting.py`.
 - Lowest module: `icm.py` at 92.81%. The residual misses across `icm.py` and
@@ -26,8 +26,29 @@ uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 
 ## Static gates
 
-- `uv run ruff check src/ scripts/` — all checks passed.
-- `uv run ruff format --check src/ scripts/` — 23 files already formatted.
+- `uv run ruff check src/ scripts/ tests/` — all checks passed.
+- `uv run ruff format --check src/ scripts/ tests/` — 38 files already formatted.
 - `uv run mypy src/ scripts/` — no issues found in 23 source files.
-- `uv run python scripts/z_generate_manuscript_variables.py` — exit 0; 60
+- `uv run python scripts/z_generate_manuscript_variables.py` — exit 0; 66
   tokens, 9 sections, 4 figures.
+
+## Falsifiability probes (run 2026-08-05, reverted after each)
+
+Every gate repaired in the verifier-remediation pass was proven capable of
+failing by breaking the thing it guards:
+
+- Published hand-ranking oracle: red under 7/7 injected evaluator defects
+  (full house below flush, quads as trips, trips above straight, one-pair
+  kicker dropped, two-pair kicker dropped, ascending flush tiebreak, wheel
+  straight undetected).
+- AA-vs-KK equity oracle: red under `best_hand` selecting the worst subset
+  (measured 72.6% vs published 81.94%). Not sensitive to category swaps — see
+  the note on the test and in `TODO.md`.
+- `NET_FLAGGED` named verdict: red when `scenarios.named_verdict` is degraded
+  to `bool(flagged)`.
+- Derived opponent range: red when `poker_snapshot` hard-codes the tight range
+  again, and when the archetype's `raise_margin` is dropped.
+- `path_cost`: red when it ignores its `weights` argument.
+- Figures: red when the poker chart plots break-even twice, the digitalis sweep
+  uses a different panel, the ICM chart plots stacks instead of bubble factors,
+  or the CFR chart plots a constant instead of the regret trace.

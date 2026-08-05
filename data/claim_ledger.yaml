@@ -12,11 +12,12 @@ claims:
     note: "cardiac-glycoside therapeutic index; >2.0 toxicity risk, >3.5 severe"
 
   - claim_id: poker_aa_vs_kk_preflop
-    kind: computed
-    value: "~0.819 heads-up preflop AA win equity (published reference)"
-    source: "tests/test_poker_engine.py (monte_carlo_equity, seeded)"
-    source_tier: computed_reference
-    freshness: regenerable
+    kind: external_oracle
+    value: "81.94% heads-up preflop AA equity vs KK (81.71% wins + half of 0.46% ties), published all-in equity tables"
+    source: "tests/test_poker_engine.py::test_preflop_aa_vs_kk_matches_published_equity (seeded monte_carlo_equity over all 36 suit combinations, tolerance +/-2.0 points)"
+    source_tier: published_reference
+    freshness: static
+    note: "the one value in this package not computed by it; the hand evaluator is checked against it"
 
   - claim_id: structuring_band
     kind: typology_definition
@@ -77,6 +78,21 @@ claims:
   - claim_id: network_named_verdict
     kind: computed
     value: "the launderer specifically is flagged (membership in NetworkReport.flagged), not merely somebody"
-    source: "src/casino_royale_2006/scenarios.py::network_snapshot (LAUNDERER in report.flagged)"
+    source: "src/casino_royale_2006/scenarios.py::named_verdict, used by network_snapshot"
+    source_tier: computed_regenerable
+    freshness: regenerable
+    note: "falsified by a negative control in tests/test_manuscript_variables.py: a flow flagging only 'ghost' yields any_flagged=True and named_verdict=False"
+
+  - claim_id: poker_range_selection
+    kind: computed
+    value: "the opponent's starting-hand range and raise threshold are selected by his observed tendencies, not hand-set"
+    source: "src/casino_royale_2006/scenarios.py::poker_snapshot -> poker_engine.range_for_archetype / recommended_raise_margin on OpponentModel.archetype()"
+    source_tier: computed_regenerable
+    freshness: regenerable
+
+  - claim_id: route_objective_incommensurability
+    kind: computed
+    value: "the fastest and safest route costs are computed under different objective functions and are not comparable; each route is re-priced under both"
+    source: "src/casino_royale_2006/scenarios.py::route_snapshot (ROUTE_FAST_WEIGHTS / ROUTE_SAFE_WEIGHTS, MobilityGraph.path_cost)"
     source_tier: computed_regenerable
     freshness: regenerable

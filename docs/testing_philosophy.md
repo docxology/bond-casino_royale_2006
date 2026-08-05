@@ -14,7 +14,7 @@ Concretely, per module:
 
 | Module | What stands in for a mock |
 |---|---|
-| `poker_engine.py` | Literal card vectors with known hand ranks; the published AA-vs-KK preflop equity (~81.9%) as an external oracle. |
+| `poker_engine.py` | Literal card vectors with known hand ranks; the published heads-up preflop AA-vs-KK equity (81.94% = 81.71% wins + half of 0.46% ties) as an external oracle, measured in `test_preflop_aa_vs_kk_matches_published_equity` over all 36 suit combinations. |
 | `poker_cfr.py` | The toy game is fully enumerated, so the equilibrium *shape* (polar: bet the top, bluff the bottom, call the middle) is itself the assertion. |
 | `icm.py` | Hand-computable exact equities on small stacks; the heads-up bubble factor, which must be exactly 1.0 by construction. |
 | `opponent_bayes.py` | Two contrasting real action histories (raise-heavy vs. fold-heavy) that must move the posterior in opposite directions. |
@@ -70,8 +70,8 @@ run, never hand-edited. Prose elsewhere in this package describes the *gate*
 | `test_gadgets.py` | catalogue non-empty, every entry callable, names match, lookup error path — all without importing `bond_api` |
 | `test_mission.py` | protocol conformance, `run_mission` flow, gadget registration, discovery |
 | `test_manuscript_variables.py` | config load, token map, live `{{TOKEN}}` cross-reference, malformed single-brace guard, resolve tree |
-| `test_scenarios.py` | canonical snapshots for all eight concept modules |
-| `test_figures.py` | all four manuscript figures render valid PNGs |
+| `test_scenarios.py` | canonical snapshots for all eight concept modules; derived opponent range; single-objective route comparison |
+| `test_figures.py` | all four figures: plotted data asserted against the engine values they claim to show, plus a decoded, non-uniform PNG |
 | `test_scripts_smoke.py` | subprocess runs of each phase CLI + the manuscript variables script |
 
 ## What counts as a passing test
@@ -86,3 +86,21 @@ after a call that cannot return `None`, a threshold no input could cross, or a
 check on a field whose name implies more than the field measures — the
 `any_flagged` rename came out of exactly that. Before adding a gate, construct
 the input that *should* fail it and confirm that it does.
+
+Two gates in this suite were rewritten for exactly that reason, and both now
+carry the falsifying input inside the test:
+
+- **`NET_FLAGGED` (`test_manuscript_variables.py`).** The old version compared
+  the token against the same snapshot call that produced it — one source on
+  both sides, so it could only fail if the snapshot were nondeterministic. It
+  now drives the production verdict rule (`scenarios.named_verdict`) with a
+  flow whose only flagged account is *somebody else*: `any_flagged` is True
+  there while the named verdict is False. Weakening the rule to
+  `bool(report.flagged)` turns that assertion red.
+- **Figures (`test_figures.py`).** The old version asserted only that a
+  non-empty file appeared, so any regression that still emitted bytes passed.
+  Each figure is now built in-process and its plotted series compared against
+  the engine values it claims to show (`toxicity_score` point by point, the CFR
+  regret trace, `icm.bubble_factor`, the poker snapshot's own numbers), with
+  axis labels and titles pinned; the saved PNG is additionally decoded and
+  required to contain more than one colour.

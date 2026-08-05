@@ -86,11 +86,14 @@ class MovementGraph:
 
     def __post_init__(self) -> None:
         self._adj: dict[str, list[str]] = {}
-        self._players: set[str] = set()
+        # A dict (insertion-ordered), not a set: set iteration order over
+        # strings depends on PYTHONHASHSEED, which would make node order -
+        # and therefore alert order out of `detect` - vary between processes.
+        self._players: dict[str, None] = {}
         for t in self.transactions:
             self._adj.setdefault(t.source, []).append(t.target)
-            self._players.add(t.source)
-            self._players.add(t.target)
+            self._players.setdefault(t.source)
+            self._players.setdefault(t.target)
 
     def nodes(self) -> tuple[str, ...]:
         """All distinct nodes (players + the cage), in first-seen order."""
