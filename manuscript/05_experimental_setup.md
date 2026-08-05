@@ -13,10 +13,14 @@ number.
 
 ## Canonical scenario
 
-| Concept | Fixed inputs (seed `SCENARIO_SEED`) |
+| Concept | Fixed inputs (seed `SEED`) |
 |---|---|
 | Poker | hero `POKER_HERO` on board `POKER_BOARD`, `POKER_RANGE` range, every simulation seeded |
+| CFR | river toy game, `CFR_STRENGTHS` strengths, `CFR_ITERATIONS` enumeration sweeps |
+| ICM | `ICM_STACKS`/`ICM_PRIZES` freezeout bubble, short-stack player `ICM_PLAYER` |
+| Bayesian opponent | `BAYES_HISTORY` of Le Chiffre's observed actions |
 | Laundering | `LAUNDER_PLAYERS` players over a configurable tick horizon, one planted smurfer |
+| Network crime | same canonical chip flow, structural (HHI/PageRank/community) analytics |
 | Routes | `ROUTE_GRID`×`ROUTE_GRID` city quarter, ground + rooftop layers, climbable profile |
 | Poison | `POISON_N_SAMPLES` tox panels, one spiked at `POISON_INDEX` |
 
@@ -27,7 +31,8 @@ number.
   `matplotlib` (figures), `pyyaml` (config); dev: `pytest`, `pytest-cov`,
   `ruff`, `mypy`, `types-PyYAML`.
 - Deterministic by design: fixed `SEED`, seeded `random.Random` instances,
-  Agg matplotlib backend, no wall-clock in persisted artifacts.
+  fully enumerated CFR, Agg matplotlib backend, no wall-clock in persisted
+  artifacts.
 
 ## Runtime determinism
 

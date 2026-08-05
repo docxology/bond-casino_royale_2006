@@ -4,13 +4,18 @@
 suite:** projects/working/bond/ · **Local-only** (no remote, never pushed).
 
 This package is one of the BOND suite's 27 film packages. It implements the
-frozen **BOND-API** `MissionProvider` protocol (THE PROTOCOL) over four pure,
-deterministic domain cores drawn from the film's set pieces:
+frozen **BOND-API** `MissionProvider` protocol (THE PROTOCOL) over eight pure,
+deterministic domain cores drawn from the film's set pieces and the analysis
+they demand:
 
 | Module | Concept | Film anchor |
 |---|---|---|
 | `poker_engine.py` | Texas hold'em game theory (pot odds, equity, opponent modelling) | the high-stakes finale |
-| `laundering_detect.py` | chip-movement money-laundering detection | the stake's funding |
+| `poker_cfr.py` | counterfactual regret minimization (river toy game) | the equilibrium behind the finale |
+| `icm.py` | tournament Independent Chip Model (prize equity, bubble) | surviving the freezeout |
+| `opponent_bayes.py` | Bayesian opponent archetype inference | reading Le Chiffre |
+| `laundering_detect.py` | chip-movement money-laundering typology detection | the stake's funding |
+| `laundering_network.py` | network-level financial crime (HHI/PageRank/communities) | the laundering structure |
 | `urban_routes.py` | parkour mobility-graph routing | the rooftop/street pursuit |
 | `poison_detect.py` | digitalis (cardiac glycoside) poison triage | the spiked martini |
 

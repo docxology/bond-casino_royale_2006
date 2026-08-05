@@ -24,8 +24,9 @@ import matplotlib
 matplotlib.use("Agg")  # headless, deterministic - no display backend
 import matplotlib.pyplot as plt
 
+from casino_royale_2006 import icm, scenarios
 from casino_royale_2006 import poison_detect as pd
-from casino_royale_2006 import scenarios
+from casino_royale_2006 import poker_cfr as pc
 
 
 def render_poker_decision(
@@ -112,6 +113,75 @@ def render_digitalis_curve(output_path: str | Path) -> str:
     ax.set_title("Digitalis toxicity score vs. serum concentration")
     ax.legend(loc="upper left", fontsize="small")
     ax.grid(alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+    return str(path)
+
+
+def render_cfr_convergence(output_path: str | Path) -> str:
+    """CFR convergence: average counterfactual regret vs. iteration count.
+
+    Plots the regret trace from a canonical river-toy solve, showing regret
+    decaying toward zero as CFR approaches the Nash equilibrium. Interpolates
+    to an even iteration axis so short and long solves share a legible curve.
+    """
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    iters = 240
+    result = pc.cfr_solve(scenarios.CFR_STRENGTHS, iters)
+    trace = list(result.regret_trace)
+    xs = [i + 1 for i in range(len(trace))]
+
+    fig, ax = plt.subplots(figsize=(6.4, 4.2))
+    ax.plot(xs, trace, color="#1e88e5", lw=2)
+    ax.set_xlabel("CFR iteration")
+    ax.set_ylabel("average counterfactual regret")
+    ax.set_title(f"CFR convergence on the river toy game ({scenarios.CFR_STRENGTHS} strengths)")
+    ax.set_yscale("log")
+    ax.grid(axis="y", alpha=0.3)
+    ax.text(
+        len(xs) * 0.95,
+        trace[-1] * 1.3,
+        f"regret {result.avg_regret:.4f}",
+        ha="right",
+        va="bottom",
+        fontsize="small",
+    )
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+    return str(path)
+
+
+def render_icm_bubble(output_path: str | Path) -> str:
+    """ICM bubble factor by player on the canonical freezeout bubble.
+
+    A bar chart of each player's tournament bubble factor (loss-if-busted over
+    gain-if-doubled), labelled by start stack, demonstrating the squeeze that
+    makes chips non-linear in prize money.
+    """
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    stacks = list(scenarios.ICM_STACKS)
+    prizes = list(scenarios.ICM_PRIZES)
+    factors = [icm.bubble_factor(stacks, prizes, i) for i in range(len(stacks))]
+
+    fig, ax = plt.subplots(figsize=(6.4, 4.2))
+    labels = [f"{s}" for s in stacks]
+    ax.bar(range(len(factors)), factors, color="#43a047")
+    ax.axhline(1.0, color="#c62828", ls="--", lw=1, label="no squeeze")
+    for i, f in enumerate(factors):
+        ax.text(i, f + 0.03, f"{f:.2f}", ha="center", va="bottom", fontsize="small")
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels)
+    ax.set_xlabel("player start stack (chips)")
+    ax.set_ylabel("bubble factor (loss / gain)")
+    ax.set_title("ICM bubble factor on a 4-player, 3-paid freezeout")
+    ax.legend(loc="upper right", fontsize="small")
+    ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)

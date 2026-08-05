@@ -29,6 +29,8 @@ reference it with `[@fig:label]` (parenthetical) or `@fig:label` (narrative).
 |---|---|---|
 | `{#fig:poker}` | `../output/figures/poker_decision.png` | `render_poker_decision()` |
 | `{#fig:digitalis}` | `../output/figures/digitalis_curve.png` | `render_digitalis_curve()` |
+| `{#fig:cfr}` | `../output/figures/cfr_convergence.png` | `render_cfr_convergence()` |
+| `{#fig:icm}` | `../output/figures/icm_bubble.png` | `render_icm_bubble()` |
 
 ## Citations
 

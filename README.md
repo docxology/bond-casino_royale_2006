@@ -6,21 +6,36 @@ four deterministic, infrastructure-free domain cores.
 
 ## What it does
 
-A special-agent mission system maps the film's set pieces to real algorithms:
+A special-agent mission system maps the film's set pieces to real algorithms.
+The package grew to eight pure, deterministic domain modules:
 
 1. **Poker game-theory engine** (`poker_engine.py`) — exact 5/7-card hand
    evaluation, Monte-Carlo + exact equity, pot-odds break-even, expected
    value, and opponent modelling (VPIP, aggression, starting-hand ranges) that
    prices a hand against an adversary's range before recommending
    fold/call/raise.
-2. **Chip-movement laundering detection** (`laundering_detect.py`) —
+2. **Counterfactual regret minimization** (`poker_cfr.py`) — solves the river
+   toy game by CFR to a near-Nash polar equilibrium (value-bet the top, bluff
+   the bottom, call the middle), fully enumerated and deterministic.
+3. **Tournament Independent Chip Model** (`icm.py`) — exact + Monte-Carlo
+   prize equity, the all-in bubble factor, and prize-equity tournament
+   call decisions on the freezeout bubble.
+4. **Bayesian opponent archetype inference** (`opponent_bayes.py`) —
+   Dirichlet-multinomial posterior over tight/loose × passive/aggressive
+   archetypes from observed actions, with predictive and expected-aggression
+   rates.
+5. **Chip-movement laundering detection** (`laundering_detect.py`) —
    transaction-graph typology scoring: structuring (smurf bands), round-trip
    rings, velocity bursts, chip parking, and betweenness collection-hub
    detection, each verified on deterministic synthetic scenes.
-3. **Parkour mobility routing** (`urban_routes.py`) — a directed
+6. **Network-level financial crime** (`laundering_network.py`) — HHI
+   concentration, PageRank collection-account ranking, label-propagation
+   communities, and conservation-imbalance scoring; an independent structural
+   detector that flags the launderer at value-neutral churn.
+7. **Parkour mobility routing** (`urban_routes.py`) — a directed
    feasibility-constrained mobility graph (ground/roof/wall/rail) planned with
    weighted Dijkstra, cross-checked against exhaustive search.
-4. **Digitalis poison triage** (`poison_detect.py`) — reference-range
+8. **Digitalis poison triage** (`poison_detect.py`) — reference-range
    toxicity scoring, Bayesian posterior from documented likelihood ratios,
    spiked-sample identification, and a deterministic antidote plan.
 

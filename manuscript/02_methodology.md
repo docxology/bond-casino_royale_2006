@@ -82,3 +82,45 @@ sign, and `identify_poisoned_sample` picks the spiked glass from a tray by
 highest posterior (tie-broken deterministically). `antidote_plan` returns the
 intervention list (digoxin-specific Fab fragments for severe toxicity,
 atropine for marked bradycardia, potassium management for hyperkalemia).
+
+## Counterfactual regret minimization (`poker_cfr.py`)
+
+The deep game-theory layer. CFR (Zinkevich et al., 2007) finds an approximate
+Nash equilibrium of an imperfect-information game by iteratively reducing
+counterfactual regret at each information set. This package solves the classic
+*river toy game* — heads-up, antes of 1, out-of-position player `P1` checks or
+bets 1, in-position `P2` folds or calls, with `CFR_STRENGTHS` discrete hand
+strengths drawn uniformly — by fully enumerating the game (no RNG). Regret
+matching turns positive regrets into mixed strategies; the reported average
+strategy and `game_value` are the equilibrium shape the finale depends on.
+
+## Independent Chip Model (`icm.py`)
+
+The tournament-economy layer. ICM (Chen & Ankenman, 2006) converts chip stacks
+into prize equity under the random-tournament model: `exact_icm_equity` uses
+the recursive ``E_i = Σ_j (s_j/S)·E_i(S∖j, P[1:])`` for small fields and
+`monte_carlo_icm` simulates finish order with a seeded RNG for larger ones. The
+*bubble factor* — prize equity lost if the stack is risked and lost, over prize
+equity gained by doubling up — exceeds 1 on the bubble, and `icm_call_ev` /
+`icm_decision` decide a tournament call in prize-equity (not chip) terms.
+
+## Network-level financial crime (`laundering_network.py`)
+
+The structural-crime layer. Viewing chip flows as a directed graph, four real
+measures run deterministically: **HHI concentration** over a player's
+counterparty flow shares, **PageRank** (Page et al., 1999) ranking the
+collection account that centrally-placed senders feed, **label propagation**
+(Raghavan, Albert & Kumara, 2007) detecting deterministic trading communities,
+and a **conservation imbalance** score. The composite `network_risk_report`
+multiplies value-neutrality by turnover share — a money-washer (chips in ≈
+chips out, no game losses) churning large volume is the signature — producing
+an independent laundering detector from the typology scanner.
+
+## Bayesian opponent archetype inference (`opponent_bayes.py`)
+
+The read-the-adversary layer. Each of the four archetypes owns a Dirichlet
+prior over actions; the Dirichlet-multinomial likelihood updates a posterior
+`P(archetype | history)` in exact log space. `map_archetype` is the MAP
+estimate, `predictive` is the model-averaged next-action probability, and
+`expected_aggression` is the Bayesian expectation of the raise/bet rate — a
+proper upgrade over the frequentist `OpponentModel` in `poker_engine.py`.

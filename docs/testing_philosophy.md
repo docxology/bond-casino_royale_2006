@@ -35,11 +35,17 @@ hand-edited).
 | File | Covers |
 |---|---|
 | `test_poker_engine.py` | hand eval vectors, exact turn/river equity, Monte-Carlo, pot odds/EV, opponent model, ranges |
+| `test_poker_cfr.py` | CFR convergence, polar equilibrium shape, determinism, error branches |
+| `test_icm.py` | exact/heads-up ICM, Monte-Carlo, bubble factor (incl. heads-up = 1), call EV/decision |
+| `test_opponent_bayes.py` | Dirichlet posterior, MAP/predictive/aggression, history discrimination |
 | `test_laundering_detect.py` | struct/round-trip/velocity/parking primitives, `detect` on seeded synthetic scenes |
+| `test_laundering_network.py` | HHI, PageRank, label-propagation determinism, conservation, composite risk report |
 | `test_urban_routes.py` | feasibility, Dijkstra vs. brute force, tie-break determinism, unreachable |
 | `test_poison_detect.py` | grade thresholds, posterior, source identification, antidote plan |
 | `test_mission.py` | protocol conformance, `run_mission` flow, gadget registration, discovery |
 | `test_manuscript_variables.py` | config load, token map, live `{{TOKEN}}` cross-reference, resolve tree |
+| `test_scenarios.py` | canonical snapshots for all eight concept modules |
+| `test_figures.py` | all four manuscript figures render valid PNGs |
 | `test_scripts_smoke.py` | subprocess runs of each phase CLI + manuscript/variables script |
 
 ## What counts as a passing test

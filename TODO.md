@@ -1,5 +1,34 @@
 # TODO — Casino Royale (2006) / LE CHIFFRE
 
+## Built (phase-4 deepening)
+
+- [x] **Four new pure domain modules** (stdlib-only, deterministic, no bond-api):
+  - [x] `src/casino_royale_2006/poker_cfr.py` — counterfactual regret
+    minimization on a river toy game: fully-enumerated `cfr_solve`, polar
+    equilibrium (value-bet top / bluff bottom / call middle), regret trace,
+    `betting_profile`.
+  - [x] `src/casino_royale_2006/icm.py` — Independent Chip Model: exact
+    recursion + seeded Monte-Carlo prize equity, all-in `bubble_factor`
+    (heads-up == 1 sanity check), `icm_call_ev`/`icm_decision`.
+  - [x] `src/casino_royale_2006/laundering_network.py` — network-level
+    financial crime: HHI concentration, PageRank, label-propagation
+    communities, conservation imbalance, composite `network_risk_report`
+    (independently flags Le Chiffre).
+  - [x] `src/casino_royale_2006/opponent_bayes.py` — Dirichlet-multinomial
+    Bayesian opponent-archetype inference (posterior/MAP/predictive/
+    expected-aggression).
+- [x] `scenarios.py` extended: `cfr_snapshot`, `icm_snapshot`,
+  `network_snapshot`, `bayes_snapshot`; `full_snapshot` now 8 concepts.
+- [x] `mission.py` deepened **inside** (public shape unchanged): 8 plan steps,
+  new results keys (cfr/icm/network/opponent_bayes), +5 gadgets (11 total).
+- [x] Manuscript updated: methodology/results/abstract/conclusion extended with
+  live tokens; `references.bib` extended with real sources (Zinkevich 2007 CFR,
+  Chen & Ankenman 2006 ICM, Raghavan 2007 label propagation, Page 1999, HHI,
+  Ganzfried & Sandholm 2011); figures +2 (`cfr_convergence.png`,
+  `icm_bubble.png`).
+- [x] Tests: +4 module test files; scenarios/mission/figures extended. Gate:
+  **155 passed**, **96.86%** line+branch on `src/`, ruff+mypy clean.
+
 ## Built (phase-2 conversion)
 
 - [x] **Pure domain cores** (stdlib-only, importable without bond-api):

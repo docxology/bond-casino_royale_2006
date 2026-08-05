@@ -36,10 +36,48 @@ def test_poison_snapshot_finds_spiked():
     assert snap["toxicity_grade"] in {"none", "mild", "moderate", "severe"}
 
 
-def test_full_snapshot_has_all_four_keys():
+def test_full_snapshot_has_all_keys():
     snap = scenarios.full_snapshot()
-    assert set(snap) == {"poker", "laundering", "routes", "poison"}
+    assert set(snap) == {
+        "poker",
+        "laundering",
+        "routes",
+        "poison",
+        "cfr",
+        "icm",
+        "network",
+        "opponent_bayes",
+    }
 
 
 def test_poker_snapshot_deterministic():
     assert scenarios.poker_snapshot() == scenarios.poker_snapshot()
+
+
+def test_cfr_snapshot_reports_equilibrium():
+    snap = scenarios.cfr_snapshot()
+    assert snap["avg_regret"] < 0.01
+    assert 0.0 < snap["game_value"] < 1.0
+    assert snap["value_bet_frequency"] > 0.9
+
+
+def test_icm_snapshot_reports_bubble():
+    snap = scenarios.icm_snapshot()
+    assert snap["players"] == 4
+    assert len(snap["equities"]) == 4
+    assert snap["bubble_factor"] > 1.0
+    assert snap["decision"] in {"fold", "call"}
+
+
+def test_network_snapshot_flags_launderer():
+    snap = scenarios.network_snapshot()
+    assert snap["launderer_flagged"] is True
+    assert snap["launderer_risk"] >= 0.5
+    assert snap["top_risk_player"] == "LeChiffre"
+
+
+def test_bayes_snapshot_infers_aggression():
+    snap = scenarios.bayes_snapshot()
+    assert snap["aggressive_posterior"] > 0.5
+    assert snap["expected_aggression"] > 0.5
+    assert snap["predictive_raise"] > 0.2

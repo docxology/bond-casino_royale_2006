@@ -18,7 +18,9 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from casino_royale_2006 import scenarios  # noqa: E402
 from casino_royale_2006.figures.plotting import (  # noqa: E402
+    render_cfr_convergence,
     render_digitalis_curve,
+    render_icm_bubble,
     render_poker_decision,
 )
 from casino_royale_2006.manuscript_variables import (  # noqa: E402
@@ -49,11 +51,15 @@ def main(argv: list[str] | None = None) -> int:
         figures_dir / "poker_decision.png", scenarios.poker_snapshot()
     )
     poison_fig = render_digitalis_curve(figures_dir / "digitalis_curve.png")
+    cfr_fig = render_cfr_convergence(figures_dir / "cfr_convergence.png")
+    icm_fig = render_icm_bubble(figures_dir / "icm_bubble.png")
 
     print(f"wrote {len(variables)} tokens -> {json_path}")
     print(f"resolved {written} manuscript sections -> {_out_dir}")
     print(f"figure -> {poker_fig}")
     print(f"figure -> {poison_fig}")
+    print(f"figure -> {cfr_fig}")
+    print(f"figure -> {icm_fig}")
 
     if unresolved:
         print(f"UNRESOLVED TOKENS: {', '.join(unresolved)}", file=sys.stderr)

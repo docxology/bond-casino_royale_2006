@@ -38,3 +38,31 @@ claims:
     source: "src/casino_royale_2006/laundering_detect.py::detect on synthetic_flow(3)"
     source_tier: computed_regenerable
     freshness: regenerable
+
+  - claim_id: cfr_toy_regret
+    kind: computed
+    value: "river toy game CFR converges to tiny average regret"
+    source: "src/casino_royale_2006/poker_cfr.py::cfr_solve (scenarios.CFR_STRENGTHS/ITERATIONS)"
+    source_tier: computed_regenerable
+    freshness: regenerable
+
+  - claim_id: icm_bubble_factor
+    kind: computed
+    value: "short-stack all-in bubble factor > 1 on the 4-player, 3-paid freezeout"
+    source: "src/casino_royale_2006/icm.py::bubble_factor (scenarios.ICM_STACKS/PRIZES)"
+    source_tier: computed_regenerable
+    freshness: regenerable
+
+  - claim_id: network_hhi_concentration
+    kind: computed
+    value: "launderer HHI = 1 (all counterparty flow through one account)"
+    source: "src/casino_royale_2006/laundering_network.py::concentration_hhi on synthetic_flow(SEED)"
+    source_tier: computed_regenerable
+    freshness: regenerable
+
+  - claim_id: bayes_aggressive_archetype
+    kind: computed
+    value: "raise-heavy history concentrates posterior on aggressive archetypes"
+    source: "src/casino_royale_2006/opponent_bayes.py::posterior (scenarios.BAYES_HISTORY)"
+    source_tier: computed_regenerable
+    freshness: regenerable

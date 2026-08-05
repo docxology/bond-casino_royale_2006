@@ -25,8 +25,9 @@ constraint, not a suggestion.
 - **Read-first.** Read `agent_instructions.md` before modifying any file;
   `testing_philosophy.md` before writing tests; `architecture.md` before
   touching `src/` or `scripts/` boundaries.
-- **Purity of the core.** The four domain modules (`poker_engine.py`,
-  `laundering_detect.py`, `urban_routes.py`, `poison_detect.py`) must not
+- **Purity of the core.** The eight domain modules (`poker_engine.py`,
+  `poker_cfr.py`, `icm.py`, `opponent_bayes.py`, `laundering_detect.py`,
+  `laundering_network.py`, `urban_routes.py`, `poison_detect.py`) must not
   import `infrastructure.*` or `bond_api`; they stay importable standalone.
 - **Thin orchestrators.** `scripts/` is glue (bootstrap + argv forwarding);
   all business logic lives in `src/`.

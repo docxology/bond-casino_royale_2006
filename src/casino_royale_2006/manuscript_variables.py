@@ -22,10 +22,14 @@ import yaml
 
 from casino_royale_2006 import __version__, scenarios
 
-#: The four pure domain concept modules (source of the printed concept tokens).
+#: The pure domain concept modules (source of the printed concept tokens).
 CONCEPT_MODULES: tuple[str, ...] = (
     "poker_engine",
+    "poker_cfr",
+    "icm",
+    "opponent_bayes",
     "laundering_detect",
+    "laundering_network",
     "urban_routes",
     "poison_detect",
 )
@@ -76,9 +80,13 @@ def generate_variables(
     config = load_mission_config(config_path)
     snap = scenarios.full_snapshot(scenarios.SEED)
     poker = snap["poker"]
+    cfr = snap["cfr"]
+    icm = snap["icm"]
     laundering = snap["laundering"]
+    network = snap["network"]
     routes = snap["routes"]
     poison = snap["poison"]
+    opponent = snap["opponent_bayes"]
 
     stamp = now if now is not None else datetime.now(timezone.utc)
     variables: dict[str, str] = {
@@ -124,6 +132,31 @@ def generate_variables(
         "POISON_POTASSIUM": _fmt(poison["potassium_mmol_l"]),
         "POISON_GRADE": str(poison["toxicity_grade"]),
         "POISON_POSTERIOR": _fmt(poison["posterior"]),
+        # cfr
+        "CFR_STRENGTHS": _fmt(cfr["strengths"]),
+        "CFR_ITERATIONS": _fmt(cfr["iterations"]),
+        "CFR_AVG_REGRET": _fmt(cfr["avg_regret"]),
+        "CFR_GAME_VALUE": _fmt(cfr["game_value"]),
+        "CFR_BLUFF_FREQ": _fmt(cfr["bluff_frequency"]),
+        "CFR_VALUE_BET_FREQ": _fmt(cfr["value_bet_frequency"]),
+        "CFR_CALL_FREQ": _fmt(cfr["call_frequency"]),
+        # icm
+        "ICM_PLAYERS": _fmt(icm["players"]),
+        "ICM_DECISION": str(icm["decision"]),
+        "ICM_CALL_EV": _fmt(icm["call_ev"]),
+        "ICM_BUBBLE_FACTOR": _fmt(icm["bubble_factor"]),
+        "ICM_LEADER_BUBBLE_FACTOR": _fmt(icm["leader_bubble_factor"]),
+        # network
+        "NET_COMMUNITIES": _fmt(network["num_communities"]),
+        "NET_TOP_CENTRALITY": str(network["top_centrality_player"]),
+        "NET_FLAGGED": _fmt(bool(network["flagged"])),
+        "NET_LAUNDERER_RISK": _fmt(network["launderer_risk"]),
+        "NET_LAUNDERER_HHI": _fmt(network["launderer_hhi"]),
+        # opponent bayes
+        "BAYES_ARCHETYPE": str(opponent["archetype"]),
+        "BAYES_AGGRESSIVE_POSTERIOR": _fmt(opponent["aggressive_posterior"]),
+        "BAYES_PREDICTIVE_RAISE": _fmt(opponent["predictive_raise"]),
+        "BAYES_EXPECTED_AGGRESSION": _fmt(opponent["expected_aggression"]),
     }
     return variables
 

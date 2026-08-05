@@ -21,10 +21,14 @@ The dependency arrow is one-directional and never invertible: nothing in
 | Module | Concept | Key entry points |
 |---|---|---|
 | `poker_engine.py` | Hold'em game theory | `evaluate_5`, `best_hand`, `exact_equity_turn_river`, `monte_carlo_equity`, `equity_vs_range`, `break_even_equity`, `recommend_action`, `OpponentModel` |
+| `poker_cfr.py` | CFR river-toy solver | `cfr_solve`, `betting_profile`, `CFRResult` |
+| `icm.py` | Tournament ICM | `exact_icm_equity`, `monte_carlo_icm`, `bubble_factor`, `icm_call_ev`, `icm_decision` |
+| `opponent_bayes.py` | Bayesian archetype inference | `BayesianOpponentModel`, `posterior`, `predictive`, `map_archetype`, `expected_aggression` |
 | `laundering_detect.py` | Chip-flow laundering | `MovementGraph`, `structuring_count`, `round_trips`, `max_velocity`, `play_ratio`, `detect`, `synthetic_flow` |
+| `laundering_network.py` | Network-level financial crime | `NetworkReport`, `concentration_hhi`, `page_rank`, `label_propagation`, `conservation_imbalance`, `network_risk_report` |
 | `urban_routes.py` | Parkour mobility graph | `MobilityGraph`, `ParkourProfile`, `build_city_quarter`, `brute_force_path` |
 | `poison_detect.py` | Digitalis triage | `ToxPanel`, `toxicity_score`, `toxicity_grade`, `posterior_toxicity`, `identify_poisoned_sample`, `antidote_plan` |
-| `scenarios.py` | Canonical mission scenario | `poker_snapshot`, `laundering_snapshot`, `route_snapshot`, `poison_snapshot`, `full_snapshot` |
+| `scenarios.py` | Canonical mission scenario | `poker_snapshot`, `cfr_snapshot`, `icm_snapshot`, `laundering_snapshot`, `network_snapshot`, `route_snapshot`, `poison_snapshot`, `bayes_snapshot`, `full_snapshot` |
 
 Purity contract: none of these import `infrastructure.*` **or** `bond_api`;
 they must import standalone (stdlib, plus matplotlib in `figures/`).

@@ -50,10 +50,19 @@ def test_recon_reflects_goal():
     assert any(f.detail == "recover the stake" for f in report.findings)
 
 
-def test_plan_has_four_steps():
+def test_plan_has_eight_engines():
     provider = MissionProvider()
     plan = provider.plan(provider.brief())
-    assert {s.name for s in plan.steps} == {"poker", "laundering", "routes", "poison"}
+    assert {s.name for s in plan.steps} == {
+        "poker",
+        "cfr",
+        "icm",
+        "laundering",
+        "network",
+        "routes",
+        "poison",
+        "opponent",
+    }
 
 
 def test_execute_results_and_provenance():
@@ -62,7 +71,21 @@ def test_execute_results_and_provenance():
     assert outcome.success is True
     assert outcome.results["film"] == "casino_royale_2006"
     assert outcome.results["codename"] == "LE CHIFFRE"
-    assert set(outcome.results) >= {"poker", "laundering", "extraction", "poison"}
+    assert set(outcome.results) >= {
+        "poker",
+        "laundering",
+        "extraction",
+        "poison",
+        "cfr",
+        "icm",
+        "network",
+        "opponent_bayes",
+    }
+    # Deepened internals expose the new concept outputs.
+    assert outcome.results["cfr"]["avg_regret"] < 0.01
+    assert outcome.results["icm"]["bubble_factor"] > 1.0
+    assert outcome.results["network"]["launderer_flagged"] is True
+    assert str(outcome.results["opponent_bayes"]["archetype"]).endswith("aggressive")
     assert outcome.provenance.seed == scenarios.SEED
     assert outcome.provenance.wall_time_s == 0.0
     assert outcome.provenance.input_hash
@@ -87,21 +110,31 @@ def test_debrief_lessons():
 def test_run_mission_full_flow():
     debrief = run_mission(MissionProvider(), ReconRequest(goal="neutralize Le Chiffre"))
     assert debrief.outcome.success
-    assert debrief.outcome.results["steps_completed"] == 4
+    assert debrief.outcome.results["steps_completed"] == 8
 
 
 # ------------------------------------------------------------- gadgets -----
 def test_gadget_registry_has_film_gadgets():
     assert GADGET_REGISTRY.contains("casino_royale_2006", "poker_equity_vs_range")
     gadgets = GADGET_REGISTRY.gadgets_for("casino_royale_2006")
-    assert len(gadgets) == 6
-    assert set(gadgets) >= {"chip_flow_detect", "poison_identify_sample", "parkour_shortest_path"}
+    assert len(gadgets) == 11
+    assert set(gadgets) >= {
+        "chip_flow_detect",
+        "network_laundering_risk",
+        "poker_cfr_solve",
+        "icm_exact_equity",
+        "icm_bubble_factor",
+        "bayesian_opponent",
+        "poison_identify_sample",
+        "parkour_shortest_path",
+    }
 
 
 def test_register_gadgets_on_fresh_registry():
     registry = GadgetRegistry()
     register_gadgets(registry)
     assert registry.lookup("casino_royale_2006", "poker_equity_vs_range") is not None
+    assert registry.lookup("casino_royale_2006", "network_laundering_risk") is not None
 
 
 # ----------------------------------------------------------- discovery -----

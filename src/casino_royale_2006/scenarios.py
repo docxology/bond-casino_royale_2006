@@ -19,10 +19,22 @@ from __future__ import annotations
 import random
 
 from casino_royale_2006 import (
+    icm,
+)
+from casino_royale_2006 import (
     laundering_detect as ld,
 )
 from casino_royale_2006 import (
+    laundering_network as ln,
+)
+from casino_royale_2006 import (
+    opponent_bayes as ob,
+)
+from casino_royale_2006 import (
     poison_detect as pd,
+)
+from casino_royale_2006 import (
+    poker_cfr as pc,
 )
 from casino_royale_2006 import (
     poker_engine as pe,
@@ -67,6 +79,32 @@ ROUTE_TO = "g5_5"
 #: Canonical poison scenario (a martini tray with one spiked glass).
 POISON_N_SAMPLES = 5
 POISON_INDEX = 3
+
+#: Canonical CFR toy-game solve (discrete strengths x regret-matching sweeps).
+CFR_STRENGTHS = 16
+CFR_ITERATIONS = 300
+
+#: Canonical tournament freezeout (the bubble): 4 players, 3 paid.
+ICM_STACKS: tuple[int, int, int, int] = (4000, 3000, 1500, 500)
+ICM_PRIZES: tuple[float, float, float] = (50.0, 30.0, 20.0)
+ICM_PLAYER = 3  # the short stack on the bubble
+ICM_TO_CALL = 400
+ICM_WIN_PROB = 0.30
+ICM_POT_AFTER_CALL = 1800
+
+#: Canonical opponent-action history observed of Le Chiffre (aggressive).
+BAYES_HISTORY: tuple[str, ...] = (
+    "raise",
+    "raise",
+    "bet",
+    "raise",
+    "call",
+    "raise",
+    "bet",
+    "raise",
+    "raise",
+    "raise",
+)
 
 
 def poker_snapshot(seed: int = SEED) -> dict[str, object]:
@@ -160,11 +198,87 @@ def poison_snapshot(seed: int = SEED) -> dict[str, object]:
     }
 
 
+def cfr_snapshot(seed: int = SEED) -> dict[str, object]:
+    """Solve the river toy game by CFR and report the equilibrium shape."""
+    result = pc.cfr_solve(CFR_STRENGTHS, CFR_ITERATIONS)
+    profile = pc.betting_profile(result)
+    return {
+        "strengths": CFR_STRENGTHS,
+        "iterations": CFR_ITERATIONS,
+        "avg_regret": round(result.avg_regret, 4),
+        "game_value": round(result.game_value, 4),
+        "bluff_frequency": round(profile["bluff_frequency"], 4),
+        "value_bet_frequency": round(profile["value_bet_frequency"], 4),
+        "call_frequency": round(profile["call_frequency"], 4),
+    }
+
+
+def icm_snapshot(seed: int = SEED) -> dict[str, object]:
+    """Report exact ICM equities, the bubble squeeze, and the tournament call decision."""
+    stacks, prizes, player = ICM_STACKS, ICM_PRIZES, ICM_PLAYER
+    equities = [round(icm.exact_icm_equity(stacks, prizes, i), 2) for i in range(len(stacks))]
+    bubble = round(icm.bubble_factor(stacks, prizes, player), 3)
+    leader_bubble = round(icm.bubble_factor(stacks, prizes, 0), 3)
+    call_ev = round(
+        icm.icm_call_ev(stacks, prizes, player, ICM_TO_CALL, ICM_WIN_PROB, ICM_POT_AFTER_CALL),
+        3,
+    )
+    decision = icm.icm_decision(
+        stacks, prizes, player, ICM_TO_CALL, ICM_WIN_PROB, ICM_POT_AFTER_CALL
+    )
+    return {
+        "players": len(ICM_STACKS),
+        "stacks": list(ICM_STACKS),
+        "prizes": list(ICM_PRIZES),
+        "equities": equities,
+        "bubble_factor": bubble,
+        "leader_bubble_factor": leader_bubble,
+        "call_ev": call_ev,
+        "decision": decision,
+    }
+
+
+def network_snapshot(seed: int = SEED) -> dict[str, object]:
+    """Run the structural (network-level) laundering detector on the canonical flow."""
+    flow = ld.synthetic_flow(seed, num_players=LAUNDERING_PLAYERS, ticks=LAUNDERING_TICKS)
+    report = ln.network_risk_report(flow)
+    base = report.as_dict()
+    top_centrality = (
+        max(report.centrality, key=lambda p: report.centrality[p]) if report.centrality else ""
+    )
+    base.update(
+        {
+            "launderer_risk": round(report.risk.get(LAUNDERER, 0.0), 3),
+            "launderer_hhi": round(report.hhi.get(LAUNDERER, 0.0), 3),
+            "top_centrality_player": top_centrality,
+        }
+    )
+    return base
+
+
+def bayes_snapshot(seed: int = SEED) -> dict[str, object]:
+    """Infer Le Chiffre's archetype posterior from his observed action history."""
+    model = ob.BayesianOpponentModel(LAUNDERER, BAYES_HISTORY)
+    posterior = model.posterior()
+    return {
+        "archetype": model.map_archetype(),
+        "aggressive_posterior": round(
+            posterior["tight-aggressive"] + posterior["loose-aggressive"], 3
+        ),
+        "predictive_raise": round(model.predictive("raise"), 3),
+        "expected_aggression": round(model.expected_aggression(), 3),
+    }
+
+
 def full_snapshot(seed: int = SEED) -> dict[str, dict[str, object]]:
-    """Compute all four concept snapshots under a single seed."""
+    """Compute all concept snapshots under a single seed."""
     return {
         "poker": poker_snapshot(seed),
         "laundering": laundering_snapshot(seed),
         "routes": route_snapshot(seed),
         "poison": poison_snapshot(seed),
+        "cfr": cfr_snapshot(seed),
+        "icm": icm_snapshot(seed),
+        "network": network_snapshot(seed),
+        "opponent_bayes": bayes_snapshot(seed),
     }
