@@ -18,11 +18,40 @@ never invents its own protocol types.
   computes real engine snapshots via `scenarios.full_snapshot(SEED)` and wraps
   them (plus deterministic provenance) in a `MissionOutcome`.
 - **Gadgets.** At import, `mission.py` calls
-  `register_gadgets(GADGET_REGISTRY)`, registering six callables with
-  `bond_api.registry.GadgetRegistry` under the film slug.
+  `register_gadgets(GADGET_REGISTRY)`, binding the catalogue in the pure
+  `casino_royale_2006.gadgets` module (`GADGETS`) to
+  `bond_api.registry.GadgetRegistry` under the film slug. The catalogue
+  currently publishes eleven callables — `poker_equity_vs_range`,
+  `poker_cfr_solve`, `icm_exact_equity`, `icm_bubble_factor`,
+  `chip_flow_detect`, `network_laundering_risk`, `parkour_shortest_path`,
+  `parkour_build_city_quarter`, `parkour_profile`, `poison_identify_sample`,
+  `bayesian_opponent` — but consumers should read `GADGET_NAMES` rather than
+  hard-code the list, and the manuscript prints the count from that tuple
+  (`{{NUM_GADGETS}}`) rather than stating it.
 - **Discovery.** The orchestrator imports `casino_royale_2006.mission` by slug
   and checks `isinstance(provider, MissionProvider)`. `scripts/00_preflight.py`
   and `tests/test_mission.py` run exactly this check.
+
+## The frozen surface (do not reshape)
+
+These names and signatures are consumed by bond-cli, the coordinator reconcile,
+and the orchestrator across packages. Changing any of them breaks discovery for
+the whole suite; deepening happens *inside* the package.
+
+| Symbol | Shape |
+|---|---|
+| `MissionProvider.film` | `str`, equal to the directory slug |
+| `MissionProvider.brief()` | `() -> MissionBrief` |
+| `MissionProvider.recon(request)` | `(ReconRequest) -> ReconReport` |
+| `MissionProvider.plan(brief)` | `(MissionBrief) -> MissionPlan` |
+| `MissionProvider.execute(plan)` | `(MissionPlan) -> MissionOutcome` |
+| `MissionProvider.debrief(outcome)` | `(MissionOutcome) -> Debrief` |
+| `register_gadgets(registry)` | `(GadgetRegistry) -> None` |
+| `GADGET_REGISTRY` | module-level `GadgetRegistry`, populated at import |
+
+`tests/test_mission.py` asserts protocol conformance, the full five-stage flow,
+gadget registration, and slug/`film` agreement — so a reshape fails the gate
+rather than failing another package at integration time.
 
 ## Facts about discovery that matter here
 

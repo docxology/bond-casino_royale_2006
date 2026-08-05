@@ -12,6 +12,10 @@ Figure set:
 * :func:`render_digitalis_curve` - digitalis toxicity score vs. serum digoxin
   concentration with the none/mild/moderate/severe grade bands shaded (a
   drug-monogram-style dose-response used to explain the poison triage).
+* :func:`render_cfr_convergence` - average counterfactual regret vs. iteration
+  for the river toy solve, decaying toward the Nash equilibrium.
+* :func:`render_icm_bubble` - the ICM bubble factor by start stack on the
+  canonical freezeout, showing the prize-equity squeeze.
 """
 
 from __future__ import annotations

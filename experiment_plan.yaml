@@ -13,12 +13,40 @@ experiments:
     baseline: break-even equity (to_call / (pot + to_call))
     expected_outputs: "equity_pct, break_even_pct, action; poker_decision.png"
 
+  - id: poker_cfr_river_toy
+    concept: "counterfactual regret minimization"
+    primary_metric: average counterfactual regret at convergence
+    condition: fully-enumerated river toy game, CFR_STRENGTHS strengths, CFR_ITERATIONS sweeps, no RNG
+    baseline: uniform-random strategy (regret does not decay)
+    expected_outputs: "avg_regret, game_value, polar value-bet/bluff/call frequencies; cfr_convergence.png"
+
+  - id: icm_bubble_pricing
+    concept: "tournament Independent Chip Model"
+    primary_metric: all-in bubble factor for the short stack
+    condition: ICM_STACKS/ICM_PRIZES freezeout, exact recursion (no RNG)
+    baseline: heads-up bubble factor, which must equal exactly 1.0
+    expected_outputs: "per-seat equities, bubble factors, call EV + decision; icm_bubble.png"
+
+  - id: opponent_archetype_posterior
+    concept: "Bayesian opponent inference"
+    primary_metric: posterior mass on aggressive archetypes
+    condition: BAYES_HISTORY observed actions, Dirichlet-multinomial in exact log space
+    baseline: uniform archetype prior (0.5 aggressive mass)
+    expected_outputs: "MAP archetype, aggressive posterior, predictive raise, expected aggression"
+
   - id: laundering_chip_flow
-    concept: "money-laundering detection"
+    concept: "money-laundering detection (behavioural typologies)"
     primary_metric: composite alert score for the planted launderer
-    condition: synthetic scene (seed 3) with one smurfer
+    condition: synthetic scene at the canonical SEED with one smurfer
     baseline: legit players scoring below threshold
     expected_outputs: "detect() alerts; launderer flagged"
+
+  - id: laundering_network_structure
+    concept: "network-level financial crime"
+    primary_metric: composite structural risk (value-neutrality x turnover share)
+    condition: the same canonical chip flow, read structurally (HHI/PageRank/communities/conservation)
+    baseline: the behavioural detector's verdict, which this must reach independently
+    expected_outputs: "risk + HHI for the launderer, community count, top PageRank account"
 
   - id: parkour_extraction
     concept: "urban parkour routing"

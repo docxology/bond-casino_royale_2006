@@ -13,12 +13,21 @@ is wrong — they would assert call signatures, not outcomes.
 
 ## Rule 2 — Pure domain core
 
-`src/casino_royale_2006/poker_engine.py`, `laundering_detect.py`,
-`urban_routes.py`, `poison_detect.py` (and `scenarios.py`) must not import
-`infrastructure.*` **or** `bond_api`. They use stdlib only (plus matplotlib in
-`figures/`). *Consequence:* they must import standalone even if the bond-api
-path dependency is missing. `mission.py` is the ONLY module that imports
-`bond_api`.
+All eight cores — `poker_engine.py`, `poker_cfr.py`, `icm.py`,
+`opponent_bayes.py`, `laundering_detect.py`, `laundering_network.py`,
+`urban_routes.py`, `poison_detect.py` — plus `scenarios.py`, `gadgets.py`, and
+`manuscript_variables.py` must not import `infrastructure.*` **or**
+`bond_api`. They use stdlib only (plus `pyyaml` in `manuscript_variables.py`
+and matplotlib in `figures/`). *Consequence:* they must import standalone even
+if the bond-api path dependency is missing. `mission.py` is the ONLY module in
+`src/` that imports `bond_api`.
+
+A corollary that has already bitten once: a **film-agnostic** core module must
+not encode this film's suspect. `laundering_network.py` reports `any_flagged`;
+whether *Le Chiffre* specifically was caught is decided by the caller in
+`scenarios.network_snapshot`. *Consequence of violating:* a field named for one
+account that actually means "somebody" — a claim that reads stronger than it
+is.
 
 ## Rule 3 — Thin orchestrators
 
@@ -33,6 +42,12 @@ Manuscript numeric claims are `{{TOKEN}}`s computed by
 plus live engine output in `scenarios.py`. Never hand-author a measured number
 in manuscript prose. *Consequence of violating:* the manuscript drifts from
 the code and the token cross-reference test fails.
+
+Count the braces. `{{TOKEN}}` substitutes; `{TOKEN}` does not — it renders its
+own braces into the PDF *and* passes the unresolved-token check, because that
+check only looks for `{{...}}`. `manuscript_variables.find_malformed_tokens()`
+is the gate for that exact typo; `scripts/z_generate_manuscript_variables.py`
+exits 1 on it and `tests/test_manuscript_variables.py` asserts it stays clean.
 
 ## Rule 5 — Determinism
 
@@ -58,11 +73,8 @@ cd projects/working/bond/casino_royale_2006
 uv run pytest tests/ --cov=src --cov-fail-under=90 -q          # >=90% line+branch
 grep -r "unittest.mock\|MagicMock\|@patch\|create_autospec" tests/ || echo Clean
 grep -rnE "^(from|import) (infrastructure|bond_api)" \
-    src/casino_royale_2006/poker_engine.py \
-    src/casino_royale_2006/laundering_detect.py \
-    src/casino_royale_2006/urban_routes.py \
-    src/casino_royale_2006/poison_detect.py \
-    src/casino_royale_2006/scenarios.py || echo "Clean - core is pure"
+    $(ls src/casino_royale_2006/*.py | grep -v '/mission.py$') \
+    || echo "Clean - core is pure"
 rg -n "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' || echo Clean
 uv run ruff check src/ scripts/ && uv run ruff format --check src/ scripts/
 uv run mypy src/ scripts/

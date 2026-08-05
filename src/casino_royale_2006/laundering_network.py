@@ -63,11 +63,18 @@ class NetworkReport:
     flagged: tuple[str, ...]
 
     def as_dict(self) -> dict[str, object]:
-        """JSON-serialisable snapshot for provenance and manuscript tokens."""
+        """JSON-serialisable snapshot for provenance and manuscript tokens.
+
+        ``any_flagged`` states only that *some* account cleared
+        :data:`RISK_THRESHOLD`. This module is film-agnostic and deliberately
+        does not decide whether a *named* suspect was caught - callers that
+        care about a specific account must test membership in ``flagged``
+        themselves (``scenarios.network_snapshot`` does exactly that).
+        """
         return {
             "num_players": len(self.players),
             "num_communities": len(self.communities),
-            "launderer_flagged": bool(self.flagged),
+            "any_flagged": bool(self.flagged),
             "top_risk_player": self.flagged[0] if self.flagged else "",
             "top_risk_score": round(self.risk[self.flagged[0]], 4) if self.flagged else 0.0,
             "flagged": list(self.flagged),

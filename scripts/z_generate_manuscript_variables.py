@@ -2,9 +2,15 @@
 
 Thin orchestrator: bootstrap src/, compute the token variables, write
 ``output/data/manuscript_variables.json``, resolve ``manuscript/[0-9]*.md`` to
-``output/manuscript/``, and render the two manuscript figures to
-``output/figures/``. Deterministic given config; ``--allow-draft`` skips the
-strict unresolved-token gate.
+``output/manuscript/``, and render the four manuscript figures
+(``poker_decision``, ``digitalis_curve``, ``cfr_convergence``, ``icm_bubble``)
+to ``output/figures/``.
+
+Deterministic given config. Two gates run at the end and both fail the script
+(exit 1) rather than warning: an *unresolved* ``{{TOKEN}}`` left in the output,
+and a *malformed* single-brace ``{TOKEN}`` in the source that would never have
+been substituted at all. ``--allow-draft`` downgrades both to warnings for
+early drafts.
 """
 
 from __future__ import annotations
@@ -24,6 +30,7 @@ from casino_royale_2006.figures.plotting import (  # noqa: E402
     render_poker_decision,
 )
 from casino_royale_2006.manuscript_variables import (  # noqa: E402
+    find_malformed_tokens,
     generate_variables,
     project_root,
     resolve_manuscript_tree,
@@ -61,11 +68,25 @@ def main(argv: list[str] | None = None) -> int:
     print(f"figure -> {cfr_fig}")
     print(f"figure -> {icm_fig}")
 
+    malformed = sorted(
+        {
+            name
+            for section in sorted((root / "manuscript").glob("[0-9]*.md"))
+            for name in find_malformed_tokens(section.read_text(encoding="utf-8"))
+        }
+    )
+
+    failed = False
     if unresolved:
         print(f"UNRESOLVED TOKENS: {', '.join(unresolved)}", file=sys.stderr)
-        if not allow_draft:
-            return 1
-    return 0
+        failed = True
+    if malformed:
+        print(
+            f"MALFORMED SINGLE-BRACE TOKENS (use {{{{NAME}}}}): {', '.join(malformed)}",
+            file=sys.stderr,
+        )
+        failed = True
+    return 1 if (failed and not allow_draft) else 0
 
 
 if __name__ == "__main__":

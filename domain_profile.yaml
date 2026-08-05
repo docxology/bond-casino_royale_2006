@@ -4,7 +4,7 @@
 mission:
   film: "casino_royale_2006"
   codename: "LE CHIFFRE"
-  objective: "deterministic special-agent mission software over four film set pieces"
+  objective: "deterministic special-agent mission software over eight concept engines drawn from the film's set pieces"
 
 review_gates:
   - coverage_90
@@ -19,10 +19,10 @@ source_policy:
   - "no remote data sources; local-only tree"
 
 artifact_expectations:
-  - "four pure domain cores with per-module real-data tests"
+  - "eight pure domain cores with per-module real-data tests"
   - "one MissionProvider implementing the frozen bond-api protocol"
   - "manuscript tokens computed from live engine output"
-  - "two manuscript figures under output/figures/"
+  - "four manuscript figures under output/figures/"
 
 benchmark_rubric_preferences:
   - "deterministic seeds over sampled reproducibility"

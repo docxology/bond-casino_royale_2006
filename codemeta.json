@@ -1,14 +1,19 @@
 {
   "name": "casino-royale-2006",
   "version": "0.1.0",
-  "description": "Casino Royale (2006) LE CHIFFRE special-agent mission software: poker game-theory engine, chip-flow laundering detection, parkour mobility routing, digitalis poison detection.",
+  "description": "Casino Royale (2006) LE CHIFFRE special-agent mission software: poker game-theory engine, CFR river-toy solver, tournament ICM, Bayesian opponent-archetype inference, chip-flow and network-level laundering detection, parkour mobility routing, digitalis poison triage.",
   "keywords": [
     "poker",
     "game-theory",
     "pot-odds",
     "equity",
+    "counterfactual-regret-minimization",
+    "icm",
+    "bayesian-inference",
     "anti-money-laundering",
     "graph",
+    "pagerank",
+    "community-detection",
     "parkour",
     "poison",
     "digitalis"

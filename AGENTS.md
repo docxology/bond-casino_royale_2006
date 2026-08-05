@@ -19,9 +19,10 @@ they demand:
 | `urban_routes.py` | parkour mobility-graph routing | the rooftop/street pursuit |
 | `poison_detect.py` | digitalis (cardiac glycoside) poison triage | the spiked martini |
 
-`scenarios.py` owns the single canonical scenario; `mission.py` is the thin
-adapter to `bond_api`; `manuscript_variables.py` + `figures/` produce the
-manuscript tokens and figures.
+`scenarios.py` owns the single canonical scenario; `gadgets.py` is the pure
+catalogue of published callables; `mission.py` is the thin adapter to
+`bond_api`; `manuscript_variables.py` + `figures/` produce the manuscript
+tokens and the four figures.
 
 ## Hard guardrails (shared BOND preamble)
 
@@ -32,27 +33,52 @@ manuscript tokens and figures.
 - ≥90% line+branch coverage: `uv run pytest tests/ --cov=src --cov-fail-under=90`.
 - Deterministic: fixed seeds, seeded RNG, no wall-clock in provenance.
 - Thin orchestrators in `scripts/`; business logic in `src/`.
-- Pure core imports no `infrastructure.*` and no `bond_api`.
-- Manuscript metrics are `{{TOKEN}}`s (never hand-authored in prose).
+- Pure core imports no `infrastructure.*` and no `bond_api` — `mission.py` is
+  the sole exception.
+- Manuscript metrics are `{{TOKEN}}`s (never hand-authored in prose). Double
+  braces: `{TOKEN}` never substitutes and is caught by
+  `manuscript_variables.find_malformed_tokens`.
 
 ## Architecture
 
 ```
-tests/  ->  src/                         (zero mocks, real algorithms)
-scripts/ ->  src/ + bond_api             (thin phase CLIs)
-src/casino_royale_2006/mission.py -> bond_api + domain core   (adapter)
-src/casino_royale_2006/{4 domain modules,scenarios} -> stdlib  (pure core)
+tests/    ->  src/                                    (zero mocks, real algorithms)
+scripts/  ->  src/ + bond_api                         (thin phase CLIs)
+src/casino_royale_2006/mission.py -> bond_api + gadgets + scenarios  (adapter)
+src/casino_royale_2006/{8 domain modules, scenarios, gadgets} -> stdlib  (pure core)
 ```
 
-## Verification
+`mission.py`'s public surface is **frozen**: `film`, the five stages
+(`brief`/`recon`/`plan`/`execute`/`debrief`), `register_gadgets`, and
+`GADGET_REGISTRY` are consumed by bond-cli, the coordinator, and the
+orchestrator. Deepen inside the package; do not reshape them.
+
+## Build & verify
 
 ```bash
-uv run sync --extra dev
+cd projects/working/bond/casino_royale_2006
+
+# 1. install (bond-api is a local path dependency; --extra dev adds the gates)
+uv sync --extra dev
+
+# 2. run it
+uv run python scripts/00_preflight.py                      # protocol conformance + slug
+uv run python scripts/run_debrief.py                       # full five-stage mission
+uv run python scripts/z_generate_manuscript_variables.py   # tokens, prose, 4 figures
+#    ^ exits 1 on an unresolved {{TOKEN}} or a malformed single-brace {TOKEN}
+
+# 3. the gates (all must pass before declaring done)
 uv run pytest tests/ --cov=src --cov-fail-under=90 -q
 uv run ruff check src/ scripts/ && uv run ruff format --check src/ scripts/
 uv run mypy src/ scripts/
-rg "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' || echo Clean
+grep -r "unittest.mock\|MagicMock\|@patch\|create_autospec" tests/ || echo "Clean - no mocks"
+rg "template[_]code_project" . --glob '!uv.lock' --glob '!.git/**' || echo "Clean - no lineage strings"
+git status --short                                          # clean after commit
 ```
+
+If `uv` reports `Failed to initialize cache` or `Operation not permitted`, that
+is a sandbox restriction, not a package failure — re-run with the sandbox
+disabled.
 
 See [`docs/agent_instructions.md`](docs/agent_instructions.md) (read-first),
 [`docs/architecture.md`](docs/architecture.md), [`docs/protocol.md`](docs/protocol.md).

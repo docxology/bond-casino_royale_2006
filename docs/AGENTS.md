@@ -27,8 +27,13 @@ constraint, not a suggestion.
   touching `src/` or `scripts/` boundaries.
 - **Purity of the core.** The eight domain modules (`poker_engine.py`,
   `poker_cfr.py`, `icm.py`, `opponent_bayes.py`, `laundering_detect.py`,
-  `laundering_network.py`, `urban_routes.py`, `poison_detect.py`) must not
-  import `infrastructure.*` or `bond_api`; they stay importable standalone.
+  `laundering_network.py`, `urban_routes.py`, `poison_detect.py`) plus
+  `scenarios.py`, `gadgets.py`, and `manuscript_variables.py` must not import
+  `infrastructure.*` or `bond_api`; they stay importable standalone.
+  `mission.py` is the sole adapter.
+- **Frozen protocol surface.** `mission.py`'s five stages, `film`,
+  `register_gadgets`, and `GADGET_REGISTRY` are consumed by other packages.
+  Deepen inside; never reshape. See `protocol.md`.
 - **Thin orchestrators.** `scripts/` is glue (bootstrap + argv forwarding);
   all business logic lives in `src/`.
 - **Zero mocks.** No `unittest.mock` / `MagicMock` / `@patch` /

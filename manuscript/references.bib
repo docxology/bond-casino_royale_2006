@@ -1,53 +1,48 @@
 % LE CHIFFRE - Casino Royale (2006) mission manuscript bibliography.
-% Local-only BOND tree: entries are descriptive (no remote DOIs).
+%
+% Two kinds of entry only:
+%   1. Local BOND software artifacts (@software) that actually exist in this
+%      tree and that this package actually binds to.
+%   2. Real, checkable published sources for the models implemented in src/.
+% Nothing descriptive-but-unattributed: if a claim needs a citation it gets a
+% real one, with real authors, title, venue, and year - or it gets none.
 
-@misc{bond_api_protocol,
-  title   = {BOND-API: The Frozen MissionProvider Protocol (THE PROTOCOL)},
-  author  = {Friedman, Daniel Ari},
-  year    = {2026},
-  note    = {Frozen contract every film package implements; discovery, registry, serialization, manuscript variables.}
+% ---------------------------------------------------------------- software --
+
+@software{bond_api_protocol,
+  title  = {BOND-API: The Frozen MissionProvider Protocol (THE PROTOCOL)},
+  author = {Friedman, Daniel Ari},
+  year   = {2026},
+  note   = {Frozen contract every BOND film package implements: protocol dataclasses, discovery, gadget registry. This package's only non-stdlib suite dependency.}
 }
 
-@misc{bond_utilities,
-  title   = {BOND-Utilities: Layer 0 Foundation (Q-BRANCH)},
-  author  = {Friedman, Daniel Ari},
-  year    = {2026},
-  note    = {ciphers, codenames, clock, randomness, mission_io provenance persistence, reporting, testing.}
+@software{casino_royale_2006,
+  title  = {Casino Royale (2006) -- LE CHIFFRE Special-Agent Mission Software},
+  author = {Friedman, Daniel Ari},
+  year   = {2026},
+  note   = {This package: hold'em game theory, CFR, ICM, Bayesian opponent inference, chip-flow and network-level laundering detection, parkour mobility routing, digitalis poison triage.}
 }
 
-@misc{casino_royale_2006,
-  title   = {Casino Royale (2006) -- Special-Agent Mission Software},
-  author  = {Friedman, Daniel Ari},
-  year    = {2026},
-  note    = {poker game-theory engine, chip-flow laundering detection, parkour mobility routing, digitalis poison detection.}
-}
-
-@misc{poker_equity,
-  title   = {Texas Hold'em Hand Ranking and Monte-Carlo Equity},
-  note    = {Standard combinatorial enumeration of five-of-seven-card hands; exact turn/river enumerator.}
-}
-
-@misc{aml_typologies,
-  title   = {Anti-Money-Laundering Transaction-Network Analytics},
-  note    = {Structuring (smurfing) bands, round-tripping, velocity, and betweenness centrality of collection hubs.}
-}
-
-@misc{dijkstra,
-  title   = {Weighted Shortest-Path Planning on Mobility Graphs},
-  note    = {Dijkstra's algorithm over feasibility-constrained directed edges.}
-}
-
-@misc{digitalis_tox,
-  title   = {Cardiac Glycoside (Digoxin/Digitoxin) Toxicology},
-  note    = {Narrow therapeutic index; bradycardia, hyperkalemia, PR prolongation; digoxin-specific Fab antibody fragments (Digibind) as definitive therapy for severe toxicity.}
-}
+% ------------------------------------------------------------ game theory --
 
 @inproceedings{zinkevich2007cfr,
   author    = {Zinkevich, Martin and Johanson, Michael and Bowling, Michael and Piccione, Carmelo},
   title     = {Regret Minimization in Games with Incomplete Information},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  booktitle = {Advances in Neural Information Processing Systems 20 (NIPS)},
+  pages     = {1729--1736},
   year      = {2007},
-  note      = {Counterfactual regret minimization: iteratively reduce counterfactual regret to approximate a Nash equilibrium of an imperfect-information game.}
+  note      = {Counterfactual regret minimization; the algorithm implemented in poker_cfr.py.}
+}
+
+@article{billings2002poker,
+  author  = {Billings, Darse and Davidson, Aaron and Schaeffer, Jonathan and Szafron, Duane},
+  title   = {The Challenge of Poker},
+  journal = {Artificial Intelligence},
+  volume  = {134},
+  number  = {1--2},
+  pages   = {201--240},
+  year    = {2002},
+  note    = {Survey of hand evaluation, simulation-based equity, and opponent modelling in computer poker.}
 }
 
 @book{chen_ankenman_2006,
@@ -55,7 +50,35 @@
   title     = {The Mathematics of Poker},
   publisher = {ConJelCo},
   year      = {2006},
-  note      = {The Independent Chip Model (ICM): converting chip stacks to tournament prize equity under the random-tournament model; bubble decisions.}
+  note      = {Pot odds, equity, and the Independent Chip Model: chip stacks to tournament prize equity; the basis for icm.py.}
+}
+
+@inproceedings{ganzfried2011opponent,
+  author    = {Ganzfried, Sam and Sandholm, Tuomas},
+  title     = {Game Theory-Based Opponent Modeling in Large Imperfect-Information Games},
+  booktitle = {Proceedings of the 10th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)},
+  pages     = {533--540},
+  year      = {2011},
+  note      = {Bayesian/game-theoretic opponent modelling; the motivation for the Dirichlet-multinomial archetype posterior in opponent_bayes.py.}
+}
+
+@techreport{minka2000dirichlet,
+  author      = {Minka, Thomas P.},
+  title       = {Estimating a {Dirichlet} Distribution},
+  institution = {Massachusetts Institute of Technology},
+  year        = {2000},
+  note        = {Dirichlet and Dirichlet-multinomial machinery; the closed-form log-space likelihood used in opponent_bayes.py.}
+}
+
+% --------------------------------------------------- networks & financial --
+
+@techreport{page1999pagerank,
+  author      = {Page, Lawrence and Brin, Sergey and Motwani, Rajeev and Winograd, Terry},
+  title       = {The {PageRank} Citation Ranking: Bringing Order to the Web},
+  institution = {Stanford InfoLab},
+  number      = {1999-66},
+  year        = {1999},
+  note        = {PageRank; used in laundering_network.py to rank the collection account that centrally-placed senders feed.}
 }
 
 @article{raghavan2007labelprop,
@@ -66,27 +89,67 @@
   number  = {3},
   pages   = {036106},
   year    = {2007},
-  note    = {Label-propagation community detection used by the chip-flow network layer.}
+  note    = {Label-propagation community detection; implemented deterministically in laundering_network.py.}
 }
 
-@techreport{page1999pagerank,
-  author      = {Page, Lawrence and Brin, Sergey and Motwani, Rajeev and Winograd, Terry},
-  title       = {The PageRank Citation Ranking: Bringing Order to the Web},
-  institution = {Stanford InfoLab},
-  number      = {1999-66},
-  year        = {1999},
-  note        = {PageRank used to rank the collection account that centrally-placed senders feed.}
+@article{brandes2001,
+  author  = {Brandes, Ulrik},
+  title   = {A Faster Algorithm for Betweenness Centrality},
+  journal = {Journal of Mathematical Sociology},
+  volume  = {25},
+  number  = {2},
+  pages   = {163--177},
+  year    = {2001},
+  note    = {The betweenness algorithm implemented in laundering_detect.py to find smurf collection hubs.}
 }
 
-@misc{herfindahl_index,
-  title = {Concentration Measures (Herfindahl-Hirschman Index)},
-  note  = {The HHI: sum of squared market/flow shares, used to quantify one-counterparty laundering concentration.}
+@article{hirschman1964,
+  author  = {Hirschman, Albert O.},
+  title   = {The Paternity of an Index},
+  journal = {The American Economic Review},
+  volume  = {54},
+  number  = {5},
+  pages   = {761--762},
+  year    = {1964},
+  note    = {The Herfindahl-Hirschman concentration index; applied to counterparty flow shares in laundering_network.py.}
 }
 
-@inproceedings{ganzfried2011opponent,
-  author    = {Ganzfried, Sam and Sandholm, Tuomas},
-  title     = {Game Theory-Based Opponent Modeling in Large Imperfect-Information Games},
-  booktitle = {Proc. 10th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)},
-  year      = {2011},
-  note      = {Bayesian/game-theoretic opponent modeling; the motivation for the Dirichlet-multinomial archetype posterior.}
+@inproceedings{weber2019aml,
+  author    = {Weber, Mark and Domeniconi, Giacomo and Chen, Jie and Weidele, Daniel Karl I. and Bellei, Claudio and Robinson, Tom and Leiserson, Charles E.},
+  title     = {Anti-Money Laundering in Bitcoin: Experimenting with Graph Convolutional Networks for Financial Forensics},
+  booktitle = {KDD Workshop on Anomaly Detection in Finance},
+  year      = {2019},
+  note      = {Graph-based AML over transaction networks; the framing this package's structural layer follows.}
+}
+
+@techreport{fatf2009casinos,
+  author      = {{Financial Action Task Force}},
+  title       = {Vulnerabilities of Casinos and Gaming Sector},
+  institution = {FATF/OECD, Paris},
+  year        = {2009},
+  note        = {Casino-sector money-laundering typologies: chip purchase and redemption, structuring, and minimal-play cash-out - the behaviours laundering_detect.py scores.}
+}
+
+% ---------------------------------------------------- routing & toxicology --
+
+@article{dijkstra1959,
+  author  = {Dijkstra, Edsger W.},
+  title   = {A Note on Two Problems in Connexion with Graphs},
+  journal = {Numerische Mathematik},
+  volume  = {1},
+  number  = {1},
+  pages   = {269--271},
+  year    = {1959},
+  note    = {Single-source shortest paths; run over feasibility-filtered parkour edges in urban_routes.py.}
+}
+
+@article{antman1990fab,
+  author  = {Antman, Elliott M. and Wenger, Thomas L. and Butler, Vincent P. and Haber, Edgar and Smith, Thomas W.},
+  title   = {Treatment of 150 Cases of Life-Threatening Digitalis Intoxication with Digoxin-Specific {Fab} Antibody Fragments: Final Report of a Multicenter Study},
+  journal = {Circulation},
+  volume  = {81},
+  number  = {6},
+  pages   = {1744--1752},
+  year    = {1990},
+  note    = {Digoxin-specific Fab fragments as definitive therapy for life-threatening digitalis toxicity; the severe-grade intervention in poison_detect.antidote_plan.}
 }

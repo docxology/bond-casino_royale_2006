@@ -36,14 +36,8 @@ from bond_api.protocol import (
 from bond_api.registry import GadgetRegistry
 
 from casino_royale_2006 import __version__ as _mission_pkg_version
-from casino_royale_2006 import icm, scenarios
-from casino_royale_2006.laundering_detect import detect
-from casino_royale_2006.laundering_network import network_risk_report
-from casino_royale_2006.opponent_bayes import BayesianOpponentModel
-from casino_royale_2006.poison_detect import identify_poisoned_sample
-from casino_royale_2006.poker_cfr import cfr_solve
-from casino_royale_2006.poker_engine import equity_vs_range
-from casino_royale_2006.urban_routes import MobilityGraph, ParkourProfile, build_city_quarter
+from casino_royale_2006 import scenarios
+from casino_royale_2006.gadgets import GADGETS
 
 __all__ = ["GADGET_REGISTRY", "MissionProvider", "register_gadgets"]
 
@@ -74,7 +68,7 @@ class MissionProvider:
     film = _FILM
 
     def brief(self) -> MissionBrief:
-        """Declare the four-concept LE CHIFFRE mission and its constraints."""
+        """Declare the eight-concept LE CHIFFRE mission and its constraints."""
         return MissionBrief(
             film=self.film,
             codename=_CODENAME,
@@ -272,23 +266,14 @@ class MissionProvider:
 
 
 def register_gadgets(registry: GadgetRegistry) -> None:
-    """Register this film's callable gadgets with a ``bond_api`` gadget registry."""
-    registry.register(
-        _FILM,
-        {
-            "poker_equity_vs_range": equity_vs_range,
-            "poker_cfr_solve": cfr_solve,
-            "icm_exact_equity": icm.exact_icm_equity,
-            "icm_bubble_factor": icm.bubble_factor,
-            "chip_flow_detect": detect,
-            "network_laundering_risk": network_risk_report,
-            "parkour_shortest_path": MobilityGraph.shortest_path,
-            "parkour_build_city_quarter": build_city_quarter,
-            "parkour_profile": ParkourProfile,
-            "poison_identify_sample": identify_poisoned_sample,
-            "bayesian_opponent": BayesianOpponentModel,
-        },
-    )
+    """Register this film's callable gadgets with a ``bond_api`` gadget registry.
+
+    The catalogue itself lives in the pure :mod:`casino_royale_2006.gadgets`
+    module (``GADGETS``); this function only binds it to the protocol registry
+    under the film slug. Public shape is frozen: coordinators call
+    ``register_gadgets(registry)`` or read :data:`GADGET_REGISTRY`.
+    """
+    registry.register(_FILM, dict(GADGETS))
 
 
 #: Module-level registry, populated at import so coordinators can `lookup`

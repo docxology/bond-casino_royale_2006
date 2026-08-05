@@ -1,4 +1,4 @@
-# Results
+# Results {#sec:results}
 
 All results are computed live from the engines on the canonical scenario in
 `src/casino_royale_2006/scenarios.py` (fixed seed, deterministic RNG).
@@ -11,7 +11,7 @@ Le Chiffre's `{{POKER_RANGE}}` range. The engine prices a
 Monte-Carlo equity of **{{POKER_EQUITY_PCT}}%** against a pot-odds break-even
 of **{{POKER_BREAK_EVEN_PCT}}%** (pot {{POKER_POT}}, to call
 {{POKER_TO_CALL}}). The resulting margin, **{{POKER_MARGIN_PCT}}%**, clears the
-value threshold, so the model recommends **{{POKER_ACTION}}** — the 
+value threshold, so the model recommends **{{POKER_ACTION}}** — the
 traditionally correct play when the price the pot lays exceeds the probability
 of winning. Figure [@fig:poker] visualizes the equity-vs-price comparison.
 
@@ -80,7 +80,7 @@ demonstrating the prize-equity squeeze.](../output/figures/icm_bubble.png){#fig:
 
 The structural detector needs no single suspicious transfer: across the
 canonical flow it computes **{{NET_COMMUNITIES}}** trading community and
-flags the account network (**{{NET_FLAGGED}}**), giving the launderer a
+flags the launderer specifically (**{{NET_FLAGGED}}**), giving him a
 composite network risk of **{{NET_LAUNDERER_RISK}}** at HHI concentration
 **{{NET_LAUNDERER_HHI}}** (everything moving through one counterparty), while
 the collection account ranks highest on PageRank centrality

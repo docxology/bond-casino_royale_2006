@@ -3,9 +3,11 @@ message: "Casino Royale (2006) LE CHIFFRE mission software (PROJECT BOND)."
 title: "Casino Royale: LE CHIFFRE — Special-Agent Mission Software"
 abstract: >
   Deterministic special-agent mission software mapping the film's set pieces to
-  four tested algorithms: a Texas hold'em game-theory engine, chip-movement
-  money-laundering detection, parkour mobility routing, and digitalis poison
-  detection, bound as a BOND-API MissionProvider.
+  eight tested algorithms: a Texas hold'em game-theory engine, a counterfactual
+  regret minimization solver, the tournament Independent Chip Model, Bayesian
+  opponent-archetype inference, chip-movement money-laundering detection,
+  network-level financial-crime analytics, parkour mobility routing, and
+  digitalis poison triage, bound as a BOND-API MissionProvider.
 authors:
   - family-names: Friedman
     given-names: Daniel Ari
@@ -15,9 +17,12 @@ keywords:
   - "Texas hold'em"
   - "pot odds"
   - "hand equity"
-  - "opponent modelling"
+  - "counterfactual regret minimization"
+  - "Independent Chip Model"
+  - "Bayesian opponent modelling"
   - "money-laundering detection"
   - "chip movement"
+  - "transaction-network analytics"
   - "parkour routing"
   - "mobility graphs"
   - "digitalis"

@@ -7,10 +7,15 @@ layers:
     description: Pure optimization/inference logic. No infrastructure.* and no bond-api imports.
     paths:
       - src/casino_royale_2006/poker_engine.py
+      - src/casino_royale_2006/poker_cfr.py
+      - src/casino_royale_2006/icm.py
+      - src/casino_royale_2006/opponent_bayes.py
       - src/casino_royale_2006/laundering_detect.py
+      - src/casino_royale_2006/laundering_network.py
       - src/casino_royale_2006/urban_routes.py
       - src/casino_royale_2006/poison_detect.py
       - src/casino_royale_2006/scenarios.py
+      - src/casino_royale_2006/gadgets.py
     rule: stdlib only (plus matplotlib in figures/); must import without bond-api present.
 
   - name: protocol-adapter

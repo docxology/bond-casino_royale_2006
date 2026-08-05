@@ -1,7 +1,7 @@
 {
   "$schema": "https://zenodo.org/schemas/deposit/preservation-filename-v1.0.0.schema.json",
   "title": "Casino Royale: LE CHIFFRE - Special-Agent Mission Software",
-  "description": "PROJECT BOND film package: Texas hold'em game-theory engine, chip-flow laundering detection, parkour mobility routing, and digitalis poison detection, bound as a BOND-API MissionProvider. Local-only working tree.",
+  "description": "PROJECT BOND film package: Texas hold'em game-theory engine, counterfactual regret minimization solver, tournament Independent Chip Model, Bayesian opponent-archetype inference, chip-flow and network-level money-laundering detection, parkour mobility routing, and digitalis poison triage, bound as a BOND-API MissionProvider. Local-only working tree.",
   "creators": [
     {
       "name": "Daniel Ari Friedman",
@@ -13,8 +13,11 @@
     "Texas hold'em",
     "pot odds",
     "hand equity",
-    "opponent modelling",
+    "counterfactual regret minimization",
+    "Independent Chip Model",
+    "Bayesian opponent modelling",
     "money-laundering detection",
+    "transaction-network analytics",
     "parkour routing",
     "digitalis",
     "poison detection"

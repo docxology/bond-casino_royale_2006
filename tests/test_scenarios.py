@@ -71,9 +71,13 @@ def test_icm_snapshot_reports_bubble():
 
 def test_network_snapshot_flags_launderer():
     snap = scenarios.network_snapshot()
+    # The named verdict is decided here, not in the film-agnostic module: it is
+    # True because LAUNDERER is in the flagged set, not because someone was.
     assert snap["launderer_flagged"] is True
+    assert scenarios.LAUNDERER in snap["flagged"]
     assert snap["launderer_risk"] >= 0.5
     assert snap["top_risk_player"] == "LeChiffre"
+    assert snap["any_flagged"] is True
 
 
 def test_bayes_snapshot_infers_aggression():

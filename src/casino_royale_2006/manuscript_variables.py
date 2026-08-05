@@ -13,6 +13,7 @@ in a prose section exists in this mapping.
 
 from __future__ import annotations
 
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,6 +22,7 @@ from typing import Any
 import yaml
 
 from casino_royale_2006 import __version__, scenarios
+from casino_royale_2006.gadgets import GADGET_NAMES
 
 #: The pure domain concept modules (source of the printed concept tokens).
 CONCEPT_MODULES: tuple[str, ...] = (
@@ -52,12 +54,25 @@ def load_mission_config(config_path: str | Path | None = None) -> dict[str, Any]
     return loaded
 
 
+#: Above this magnitude an integral float is printed with thousands separators
+#: rather than ``%g``, which would render a pot of 5000000.0 as "5e+06".
+_SEPARATOR_THRESHOLD = 10_000.0
+
+
 def _fmt(value: Any) -> str:
-    """Render a snapshot value as a compact stable string for a token."""
-    if isinstance(value, float):
-        return f"{value:g}"
+    """Render a snapshot value as a compact, stable, readable token string.
+
+    Bools become yes/no; sequences are comma-joined; floats use ``%g`` so small
+    values stay compact - except large *integral* floats (chip counts, pot
+    sizes), which get thousands separators. Without that exception a five
+    million chip pot prints as ``5e+06`` in the published manuscript.
+    """
     if isinstance(value, bool):
         return "yes" if value else "no"
+    if isinstance(value, float):
+        if value.is_integer() and abs(value) >= _SEPARATOR_THRESHOLD:
+            return f"{value:,.0f}"
+        return f"{value:g}"
     if isinstance(value, (list, tuple)):
         return ", ".join(_fmt(v) for v in value)
     return str(value)
@@ -99,6 +114,8 @@ def generate_variables(
         "MISSION_KEYWORDS": ", ".join(map(str, config.get("keywords", []))),
         "CONCEPT_MODULES": ", ".join(CONCEPT_MODULES),
         "NUM_CONCEPT_MODULES": str(len(CONCEPT_MODULES)),
+        "GADGET_NAMES": ", ".join(GADGET_NAMES),
+        "NUM_GADGETS": str(len(GADGET_NAMES)),
         "PYTHON_VERSION": f"{sys.version_info.major}.{sys.version_info.minor}",
         "GENERATION_TIMESTAMP": stamp.isoformat(timespec="seconds"),
         # poker
@@ -149,7 +166,7 @@ def generate_variables(
         # network
         "NET_COMMUNITIES": _fmt(network["num_communities"]),
         "NET_TOP_CENTRALITY": str(network["top_centrality_player"]),
-        "NET_FLAGGED": _fmt(bool(network["flagged"])),
+        "NET_FLAGGED": _fmt(network["launderer_flagged"]),
         "NET_LAUNDERER_RISK": _fmt(network["launderer_risk"]),
         "NET_LAUNDERER_HHI": _fmt(network["launderer_hhi"]),
         # opponent bayes
@@ -187,6 +204,36 @@ def resolve_manuscript_tree(
         out_dir.joinpath(section.name).write_text(text, encoding="utf-8")
         written += 1
     return out_dir, written, unresolved
+
+
+#: A token name: SHOUTING_SNAKE_CASE, the shape every key in the mapping uses.
+_TOKEN_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
+
+#: A single-brace placeholder ``{NAME}`` whose braces are not doubled. The
+#: negative look-around is the whole point: ``{{NAME}}`` must not match.
+_SINGLE_BRACE = re.compile(r"(?<!\{)\{([^{}]+)\}(?!\})")
+
+
+def find_malformed_tokens(text: str) -> list[str]:
+    """Return single-brace ``{TOKEN}`` placeholders that will never substitute.
+
+    :func:`resolve_manuscript_tree` only replaces ``{{TOKEN}}``. A section that
+    writes ``{TOKEN}`` by mistake therefore renders the literal brace text into
+    the published manuscript and slips past the unresolved-token gate, which
+    only looks for ``{{...}}``. This finds that class of typo.
+
+    Args:
+        text: manuscript prose to scan.
+
+    Returns:
+        Sorted, de-duplicated names that look like tokens but use single braces.
+    """
+    found = {
+        match.group(1).strip()
+        for match in _SINGLE_BRACE.finditer(text)
+        if _TOKEN_NAME.match(match.group(1).strip())
+    }
+    return sorted(found)
 
 
 def _find_tokens(text: str) -> list[str]:

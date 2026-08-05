@@ -35,7 +35,7 @@ claims:
   - claim_id: launderer_flagged
     kind: computed
     value: "synthetic scene flags the planted smurfer (composite score)"
-    source: "src/casino_royale_2006/laundering_detect.py::detect on synthetic_flow(3)"
+    source: "src/casino_royale_2006/scenarios.py::laundering_snapshot -> laundering_detect.detect on synthetic_flow(SEED)"
     source_tier: computed_regenerable
     freshness: regenerable
 
@@ -64,5 +64,19 @@ claims:
     kind: computed
     value: "raise-heavy history concentrates posterior on aggressive archetypes"
     source: "src/casino_royale_2006/opponent_bayes.py::posterior (scenarios.BAYES_HISTORY)"
+    source_tier: computed_regenerable
+    freshness: regenerable
+
+  - claim_id: gadget_catalogue_size
+    kind: computed
+    value: "the published gadget count printed in the manuscript is derived, not written"
+    source: "src/casino_royale_2006/gadgets.py (GADGET_NAMES) -> manuscript_variables NUM_GADGETS"
+    source_tier: computed_regenerable
+    freshness: regenerable
+
+  - claim_id: network_named_verdict
+    kind: computed
+    value: "the launderer specifically is flagged (membership in NetworkReport.flagged), not merely somebody"
+    source: "src/casino_royale_2006/scenarios.py::network_snapshot (LAUNDERER in report.flagged)"
     source_tier: computed_regenerable
     freshness: regenerable

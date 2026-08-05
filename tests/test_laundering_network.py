@@ -101,4 +101,40 @@ def test_network_risk_report_as_dict():
     flow = synthetic_flow(17, num_players=8)
     d = ln.network_risk_report(flow).as_dict()
     assert set(d) >= {"num_players", "num_communities", "top_risk_player", "flagged"}
-    assert d["launderer_flagged"] is True
+    assert d["any_flagged"] is True
+    assert d["top_risk_player"] == "LeChiffre"
+
+
+def test_as_dict_any_flagged_is_not_a_named_verdict():
+    """``any_flagged`` must mean "somebody", never "the film's launderer".
+
+    Negative control: a flow whose only flagged account is *not* LeChiffre must
+    still report ``any_flagged`` True, while a caller asking about LeChiffre by
+    name gets False. If this module ever hard-codes the film's suspect again,
+    one of these two assertions fails.
+    """
+    # A lone value-neutral churner named "ghost": chips in == chips out.
+    txns = (
+        ChipTransaction("cage", "ghost", 10000.0, 0, "cash_in"),
+        ChipTransaction("ghost", "cage", 10000.0, 1, "cash_out"),
+    )
+    report = ln.network_risk_report(txns)
+    assert report.flagged == ("ghost",)
+    assert "LeChiffre" not in report.flagged
+    assert report.as_dict()["any_flagged"] is True
+    assert "launderer_flagged" not in report.as_dict()
+
+
+def test_as_dict_reports_nothing_flagged_when_nobody_qualifies():
+    """The composite gate must be capable of flagging no one at all."""
+    # A pure loser: cash in 10000, cash out 1000 -> imbalance 0.9 >> tolerance.
+    txns = (
+        ChipTransaction("cage", "mark", 10000.0, 0, "cash_in"),
+        ChipTransaction("mark", "cage", 1000.0, 1, "cash_out"),
+    )
+    report = ln.network_risk_report(txns)
+    assert report.flagged == ()
+    d = report.as_dict()
+    assert d["any_flagged"] is False
+    assert d["top_risk_player"] == ""
+    assert d["top_risk_score"] == 0.0

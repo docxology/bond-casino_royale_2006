@@ -3,15 +3,23 @@
 This module owns the *single* scenario the mission, the manuscript, and the
 CLI all draw from, so a claim computed once is the claim shown everywhere
 ("never hand-author metrics in prose"). It stays pure stdlib and imports only
-the four domain cores - bond-api is deliberately absent so manuscript variable
-generation and the domain stay importable even if the path dependency is
-missing.
+the eight domain cores (``poker_engine``, ``poker_cfr``, ``icm``,
+``opponent_bayes``, ``laundering_detect``, ``laundering_network``,
+``urban_routes``, ``poison_detect``) - bond-api is deliberately absent so
+manuscript variable generation and the domain stay importable even if the path
+dependency is missing.
 
-Each ``*_snapshot`` runs the corresponding engine with a fixed seed and
-returns a JSON-serializable dict of real numbers (equity percentages, alert
-scores, route costs, toxicity grades), which :mod:`mission` folds into its
+Each ``*_snapshot`` runs the corresponding engine and returns a
+JSON-serializable dict of real numbers (equity percentages, alert scores, route
+costs, toxicity grades), which :mod:`mission` folds into its
 ``MissionOutcome.results`` and :mod:`manuscript_variables` turns into
 ``{{TOKEN}}``s.
+
+Every snapshot takes the same ``seed`` argument so ``full_snapshot`` can drive
+them uniformly. Three engines are *exactly* enumerated rather than sampled
+(:func:`cfr_snapshot`, :func:`icm_snapshot`, :func:`bayes_snapshot`), so they
+accept the seed for signature parity and legitimately ignore it - their output
+is already seed-invariant. Each docstring states this explicitly.
 """
 
 from __future__ import annotations
@@ -199,7 +207,11 @@ def poison_snapshot(seed: int = SEED) -> dict[str, object]:
 
 
 def cfr_snapshot(seed: int = SEED) -> dict[str, object]:
-    """Solve the river toy game by CFR and report the equilibrium shape."""
+    """Solve the river toy game by CFR and report the equilibrium shape.
+
+    The solve is fully enumerated (no RNG), so ``seed`` is accepted for
+    signature parity with the sampled snapshots and does not affect the result.
+    """
     result = pc.cfr_solve(CFR_STRENGTHS, CFR_ITERATIONS)
     profile = pc.betting_profile(result)
     return {
@@ -214,7 +226,11 @@ def cfr_snapshot(seed: int = SEED) -> dict[str, object]:
 
 
 def icm_snapshot(seed: int = SEED) -> dict[str, object]:
-    """Report exact ICM equities, the bubble squeeze, and the tournament call decision."""
+    """Report exact ICM equities, the bubble squeeze, and the tournament call decision.
+
+    Uses the exact ICM recursion, so ``seed`` is accepted for signature parity
+    with the sampled snapshots and does not affect the result.
+    """
     stacks, prizes, player = ICM_STACKS, ICM_PRIZES, ICM_PLAYER
     equities = [round(icm.exact_icm_equity(stacks, prizes, i), 2) for i in range(len(stacks))]
     bubble = round(icm.bubble_factor(stacks, prizes, player), 3)
@@ -248,6 +264,9 @@ def network_snapshot(seed: int = SEED) -> dict[str, object]:
     )
     base.update(
         {
+            # Named-suspect verdict, decided here rather than in the film-agnostic
+            # network module: the launderer specifically, not "somebody".
+            "launderer_flagged": LAUNDERER in report.flagged,
             "launderer_risk": round(report.risk.get(LAUNDERER, 0.0), 3),
             "launderer_hhi": round(report.hhi.get(LAUNDERER, 0.0), 3),
             "top_centrality_player": top_centrality,
@@ -257,7 +276,11 @@ def network_snapshot(seed: int = SEED) -> dict[str, object]:
 
 
 def bayes_snapshot(seed: int = SEED) -> dict[str, object]:
-    """Infer Le Chiffre's archetype posterior from his observed action history."""
+    """Infer Le Chiffre's archetype posterior from his observed action history.
+
+    The Dirichlet-multinomial posterior is computed in closed form, so ``seed``
+    is accepted for signature parity and does not affect the result.
+    """
     model = ob.BayesianOpponentModel(LAUNDERER, BAYES_HISTORY)
     posterior = model.posterior()
     return {

@@ -1,9 +1,12 @@
-# Methodology
+# Methodology {#sec:methodology}
 
-This section defines the four algorithms. All are pure Python; none imports a
-framework. Full signatures live in
-`src/casino_royale_2006/`: `poker_engine.py`, `laundering_detect.py`,
-`urban_routes.py`, `poison_detect.py`.
+This section defines all {{NUM_CONCEPT_MODULES}} algorithms. All are pure
+Python; none imports a framework, `infrastructure.*`, or bond-api. Full
+signatures live in `src/casino_royale_2006/`: `poker_engine.py`,
+`poker_cfr.py`, `icm.py`, `opponent_bayes.py`, `laundering_detect.py`,
+`laundering_network.py`, `urban_routes.py`, `poison_detect.py`. The canonical
+inputs every one of them is run on live in `scenarios.py`; the published
+callables are catalogued in `gadgets.py`.
 
 ## Poker game-theory engine (`poker_engine.py`)
 
@@ -124,3 +127,23 @@ prior over actions; the Dirichlet-multinomial likelihood updates a posterior
 estimate, `predictive` is the model-averaged next-action probability, and
 `expected_aggression` is the Bayesian expectation of the raise/bet rate — a
 proper upgrade over the frequentist `OpponentModel` in `poker_engine.py`.
+
+## Mission adapter and gadget catalogue (`mission.py`, `gadgets.py`)
+
+The engines above are joined by exactly one adapter. `mission.py` implements
+the frozen BOND-API `MissionProvider` — `brief → recon → plan → execute →
+debrief` — declaring `film = "casino_royale_2006"` so the orchestrator can
+discover it by slug. `execute` calls `scenarios.full_snapshot(SEED)` once,
+folds each engine's real output into `MissionOutcome.results` under a
+per-concept key, and attaches a `Provenance` record carrying the package
+version, the seed, and a SHA-256 `input_hash` over the canonical scenario
+constants — never a wall-clock reading, so two runs are byte-identical.
+
+The published callables are declared separately, in the pure `gadgets.py`
+catalogue: {{NUM_GADGETS}} entries ({{GADGET_NAMES}}). Keeping the catalogue
+out of the adapter means it can be counted and exercised without the protocol
+dependency present, which is what lets this manuscript state its size as a
+token rather than a hand-written number. `mission.register_gadgets` binds that
+mapping to the protocol's `GadgetRegistry` under the film slug; the public
+shape consumed by bond-cli, the coordinator, and the orchestrator is unchanged
+by the split.

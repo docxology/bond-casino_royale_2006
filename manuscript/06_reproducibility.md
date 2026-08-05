@@ -1,4 +1,4 @@
-# Reproducibility
+# Reproducibility {#sec:reproducibility}
 
 ## Determinism & provenance
 
@@ -16,6 +16,8 @@ manuscript twice yields identical `output/manuscript/*.md` copies.
 | `output/manuscript/*.md` | prose sections with `TOKEN` placeholders resolved | same script |
 | `output/figures/poker_decision.png` | equity-vs-price figure | same script |
 | `output/figures/digitalis_curve.png` | digitalis monogram | same script |
+| `output/figures/cfr_convergence.png` | CFR average-regret decay | same script |
+| `output/figures/icm_bubble.png` | ICM bubble factor by start stack | same script |
 
 `output/` is git-ignored (regenerable artifacts); the working tree stays clean
 after any run.
@@ -26,6 +28,15 @@ after any run.
   (line + branch ≥ 90% on `src/`; live count in `docs/_generated/COUNTS.md`).
 - **Zero mocks**: no `unittest.mock` / `MagicMock` / `@patch` / `create_autospec`
   anywhere in `tests/`.
+- **Token integrity**: two gates, both failing rather than warning. First,
+  every double-brace placeholder in a numbered section must exist in the
+  mapping — the resolver reports leftovers and
+  `scripts/z_generate_manuscript_variables.py` exits 1. Second, no section may
+  use the *single*-brace form: it is never substituted, so it would print its
+  own braces into the published PDF while passing the first check, which looks
+  only for the double-brace form. `manuscript_variables.find_malformed_tokens`
+  is the detector; `tests/test_manuscript_variables.py` pins both. See
+  `manuscript/SYNTAX.md` for the literal syntax.
 - **Lineage**: `rg "template[_]code_project"` returns nothing outside any
   doc that explicitly describes the check.
 - **Type & format**: `uv run ruff check && uv run ruff format` and
