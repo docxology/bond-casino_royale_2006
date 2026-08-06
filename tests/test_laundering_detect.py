@@ -142,3 +142,28 @@ def test_synthetic_flow_deterministic():
     f2 = ld.synthetic_flow(3, num_players=5, ticks=20)
     assert f1 == f2
     assert f1
+
+
+# ------------------------------------------------- round-2 regression --------
+def test_detect_round_trip_contributes_a_ring_reason():
+    """Regression: ring scoring must actually run inside ``detect``.
+
+    ``round_trips()`` was unit-tested in isolation, but no flow ever drove
+    ``detect`` through the branch that folds a ring into the composite score
+    and emits the ``roundtrip:N`` reason - a regression dropping ring scoring
+    from alerts would have kept every test green. This flow's *only* signals
+    are small structured legs plus a returned ring, and the resulting Alert
+    must carry the ``roundtrip:`` reason and a score that includes it.
+    """
+    txns = (
+        ld.ChipTransaction("cage", "A", 50000.0, 0, "cash_in"),
+        *tuple(ld.ChipTransaction("A", "B", 9800.0, i, "transfer") for i in range(1, 7)),
+        ld.ChipTransaction("B", "A", 6000.0, 7, "transfer"),  # the returned ring
+    )
+    alerts = ld.detect(txns)
+    ring = next((a for a in alerts if a.player == "A"), None)
+    assert ring is not None
+    reasons = " ".join(ring.reasons)
+    assert "roundtrip:1" in reasons
+    assert "structuring" in reasons  # ring coexists with the structured legs
+    assert ring.score >= 1.5

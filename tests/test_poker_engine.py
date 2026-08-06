@@ -465,3 +465,48 @@ def test_raise_margin_changes_the_recommended_action():
     tight = pe.recommended_raise_margin("tight-aggressive")
     assert pe.recommend_action(pot, to_call, equity, raise_margin=loose) == "raise"
     assert pe.recommend_action(pot, to_call, equity, raise_margin=tight) == "call"
+
+
+# ------------------------------------------------- range sampling fidelity ----
+def test_offsuit_range_hands_never_share_a_suit():
+    """Negative control for the offsuit sampling defect (round-2).
+
+    An \"offsuit\" starting-hand class (``AKo``, ``AQo``, ``KQo``, ``AJo``)
+    is defined by holding two cards of *different* suits. The old sampler chose
+    the low card independently of the high card's suit, so roughly 25% of the
+    hands drawn for an offsuit class were actually suited (AKs masquerading as
+    AKo) - silently tilting the opponent range and the equity it prices toward
+    suited hands. Every drawn pair must keep distinct suits, across many seeds
+    and over the dead-card-full canonical board.
+    """
+    hole = pe.parse_cards(["Kh", "Kc"])
+    board = pe.parse_cards(["As", "7h", "2d"])
+    dead = set(hole) | set(board)
+    offsuit_classes = ("AKo", "AQo", "KQo", "AJo")
+    seen = 0
+    for i in range(60):
+        rng = random.Random(i)
+        for hand in pe.iter_opponent_hands(offsuit_classes, dead, rng, 4):
+            assert pe.card_suit(hand[0]) != pe.card_suit(hand[1]), (
+                f"offsuit class drew a same-suit pair {pe.card_str(hand[0])}"
+                f"{pe.card_str(hand[1])} - range fidelity broken"
+            )
+            seen += 1
+    assert seen > 0
+
+
+def test_exact_equity_records_ties_on_a_paired_flop():
+    """The exact turn/river enumerator must count tied runouts.
+
+    When the flop pairs and both players hold the same rank for the kicker,
+    most runouts leave both with the identical best hand (pair of the board,
+    ace kicker) - so ``exact_equity_turn_river`` should report a non-zero tie
+    fraction. This pins the previously-uncovered tie branch of the equity
+    partition.
+    """
+    a = pe.parse_cards(["As", "Jd"])
+    b = pe.parse_cards(["Ac", "Jc"])  # board kickers cancel on every runout
+    flop = pe.parse_cards(["9d", "9c", "2h"])
+    win_a, tie, win_b = pe.exact_equity_turn_river(a, b, flop)
+    assert win_a + tie + win_b == pytest.approx(1.0)
+    assert tie > 0.0

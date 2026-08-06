@@ -381,7 +381,17 @@ def _cards_for_class(
         s = rng.choice(common)
         return ((hi - 2) * 4 + s, (lo - 2) * 4 + s)
     hi_pick = rng.choice(hi_cards)
-    lo_pick = rng.choice(lo_cards)
+    # An "offsuit" class must contain two cards of *different* suits. Picking
+    # the low card independently would hand back a same-suit pair ~25% of the
+    # time, silently treating AKs as AKo and tilting the sampled range (and the
+    # equity it prices) toward suited hands. Constrain the low card to a suit
+    # the high card does not occupy; if every live low card is same-suited to
+    # the draw, the class is not drawable on this dead set.
+    hi_suit = hi_pick % 4
+    lo_off_suit = [c for c in lo_cards if c % 4 != hi_suit]
+    if not lo_off_suit:
+        return None
+    lo_pick = rng.choice(lo_off_suit)
     return (hi_pick, lo_pick)
 
 

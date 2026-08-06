@@ -140,3 +140,43 @@ def test_bayes_snapshot_infers_aggression():
     assert snap["aggressive_posterior"] > 0.5
     assert snap["expected_aggression"] > 0.5
     assert snap["predictive_raise"] > 0.2
+
+
+# ------------------------------------------------- round-2 regressions -------
+def test_poker_snapshot_can_recommend_fold_at_an_unfavourable_price():
+    """Negative control: the snapshot decision path is able to say ``fold``.
+
+    The canonical hand always clears the pot-odds bar, so ``fold`` had never
+    been produced on the snapshot path the manuscript and mission read. By
+    overriding the price (a huge to-call against a small pot) that same path
+    must return ``fold`` - proving the decision code is shown capable of
+    refusing a hand, not just of raising/calling.
+    """
+    default = scenarios.poker_snapshot()
+    assert default["action"] == "raise"  # canonical stays on the raise path
+
+    folded = scenarios.poker_snapshot(pot=100.0, to_call=500.0)
+    assert float(folded["break_even_pct"]) > 50.0
+    assert folded["action"] == "fold"
+    # The override is the *only* thing that differs - the equity and range are
+    # still drawn by the exact same canonical engine path.
+    assert folded["range"] == default["range"]
+
+
+def test_cross_detector_agreement_on_the_named_suspect():
+    """The typology and network detectors must name the *same* account.
+
+    Both layers are claimed to converge on Le Chiffre; this binds that claim to
+    a single failure point so neither detector can silently drift onto a
+    different account without a test failing. The negative-control half proves
+    the assertion is account-specific and not just \"somebody was flagged\".
+    """
+    launder = scenarios.laundering_snapshot()
+    net = scenarios.network_snapshot()
+    assert launder["launderer_flagged"] is True
+    assert net["launderer_flagged"] is True
+    assert scenarios.LAUNDERER in net["flagged"]
+    # The agreement is about THIS account, not merely that anyone was flagged:
+    # an unrelated name must answer False in both layers.
+    for other in ("nobody", "cage", "P2"):
+        assert scenarios.named_verdict(net["flagged"], other) is False

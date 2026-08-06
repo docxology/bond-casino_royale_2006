@@ -121,3 +121,58 @@ If `uv` reports `Failed to initialize cache` or `Operation not permitted`, that
 is a sandbox restriction, not a package failure — re-run with the sandbox
 disabled. After any change that moves the numbers, regenerate
 `docs/_generated/COUNTS.md` from a real run rather than editing it.
+
+
+## Round-2 (2026-08-06) - hostile-review hardening + verification closure
+
+**Agent:** round-2 improvement pass. Baseline to final: tests 199->207 passed (0
+skipped / 0 failed); line+branch coverage **97.15% -> 97.51%** on `src/`
+(`--cov-fail-under=90`). `ruff check`, `ruff format --check`, `mypy src/
+scripts/`, `scripts/00_preflight.py`, and
+`scripts/z_generate_manuscript_variables.py` (66 tokens, 9 sections, 4 figures)
+all exit 0. Working tree committed clean.
+
+### Findings (hostile review) and fixes, with test evidence
+
+| # | Finding | Where | Fix | Regression / negative-control test |
+|---|---|---|---|---|
+| R2-1 | **Offsuit starting-hand classes could be drawn as *suited* pairs.** `_cards_for_class` picked the low card independently of the high card's suit, so `AKo`/`AQo`/`AJo`/`KQo` returned a same-suit pair ~25% of the time - silently substituting AKs for AKo and tilting the sampled opponent range (and the equity it prices) toward suited hands. Measured before the fix: 189 same-suit per 800 draws per class (approximately the published 25%). | `poker_engine.py::_cards_for_class` | The offsuit branch now constrains the low card to a suit the high card does not occupy; if no such live low card exists the class is declared un-drawable (`None`), which the caller already tolerates. | `tests/test_poker_engine.py::test_offsuit_range_hands_never_share_a_suit` - 0 same-suit pairs across 60 seeds x 4 offsuit classes over the canonical dead set (previously ~25%). |
+| R2-2 | **`exact_icm_equity` raised `ZeroDivisionError` on multi-busted states.** The recursion divides by `total = sum(remaining)`; when an ICM win/lose probe leaves a surviving set with zero total chips (e.g. `bubble_factor` over a field that already holds a busted 0-stack short stack), `remaining[target]/total` divides by zero. Verified: `icm.bubble_factor((10,1,0),(20,0,0),0)` raised `division by zero` before the fix. | `icm.py::exact_icm_equity._eq` | When `total == 0` (all survivors busted) the next prize is shared equally among them - no division by zero; the probe now returns the hand-derived bubble factor 10.0. | `tests/test_icm.py::test_bubble_factor_tolerates_a_field_with_a_busted_short_stack` and `test_exact_icm_shares_the_next_prize_over_a_zero_stack_mass`. |
+
+### Verification closure (previously-open TODO items now bound by a failing-capable test)
+
+| Item | New test binding |
+|---|---|
+| **V1** (round-trip never ran inside `detect`) | `tests/test_laundering_detect.py::test_detect_round_trip_contributes_a_ring_reason` drives `detect` with a ring flow and asserts the `roundtrip:1` reason plus score; `laundering_detect.py` 286-289 leave the Missing column. |
+| **V2** (residual edge branches) | Tie branch: `tests/test_poker_engine.py::test_exact_equity_records_ties_on_a_paired_flop`. `inf` bubble factor: `tests/test_icm.py::test_bubble_factor_returns_inf_when_doubling_cannot_grow_equity`. |
+| **V3** (cross-detector agreement) | `tests/test_scenarios.py::test_cross_detector_agreement_on_the_named_suspect` - both layers catch Le Chiffre, and *only* Le Chiffre (negative control on the name). |
+| **V5** (never a `fold` on the production snapshot path) | `poker_snapshot` gained optional `pot`/`to_call` overrides (defaults = the canonical constants; this is a *parameterized* negative control, not a second canonical scene); `tests/test_scenarios.py::test_poker_snapshot_can_recommend_fold_at_an_unfavourable_price` proves the same snapshot path can refuse a hand. |
+
+### Manuscript
+
+- `manuscript/02_methodology.md` now states the range-fidelity guarantee (an
+  offsuit class is always sampled with two different suits).
+- Regenerated `output/data/manuscript_variables.json` + resolved prose + the 4
+  figures; byte-identical across a clock tick. The corrected range moved the
+  live poker-equity token to **45.62%** - a direct, live consequence of R2-1.
+
+### Final gate numbers (this commit)
+
+- **207 passed, 0 skipped, 0 failed; 97.51% line+branch** on `src/`.
+- `ruff check` / `ruff format --check` (38 files) / `mypy src/ scripts/` (23
+  files) all clean; `00_preflight.py` exit 0.
+- `z_generate_manuscript_variables.py`: 66 tokens, 9 sections, 4 figures, exit 0.
+
+### Left for a future round
+
+- `opponent_bayes.py:103` (uniform-posterior fallback on `total <= 0`) is
+  *provably unreachable* - the maximum log-weight maps to `exp(0)=1`, so
+  `total >= 1` always. Consider removing it as dead defensive code (low risk,
+  low priority).
+- `poker_engine.py` `None`-return branches from `_cards_for_class` (undrawable
+  classes) are guarded by the caller but not individually pinned; a test showing
+  `iter_opponent_hands` yields *fewer* hands (no crash) when a class is
+  undrawable on a near-full board would close them.
+- `urban_routes.py:309,316,318` (`brute_force_path` depth cap + infeasible-edge
+  skip) remain un-pinned; a small-graph brute-force cross-check under a depth
+  cap would cover them.

@@ -41,7 +41,10 @@ history reads **{{POKER_OPPONENT_ARCHETYPE}}**, selecting the
 **{{POKER_RANGE}}** range of {{POKER_RANGE_CLASSES}} classes, from which
 {{POKER_RANGE_HANDS}} concrete pairs are drawn. `equity_vs_range` then averages
 the hero's Monte-Carlo equity over those pairs — the number the agent compares
-to the pot-odds price. The same label also sets the raise threshold, via
+to the pot-odds price. Range fidelity is exact: a drawn hand is guaranteed
+to match its class, so an offsuit class (e.g. ``AKo``) is always sampled with
+two different suits and never silently treated as its suited sibling, which
+would tilt the averaged equity toward suited runouts. The same label also sets the raise threshold, via
 `recommended_raise_margin` ({{POKER_RAISE_MARGIN_PCT}}% here), which is passed
 to `recommend_action` as `raise_margin`.
 

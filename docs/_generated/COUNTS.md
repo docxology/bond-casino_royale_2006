@@ -9,7 +9,7 @@ uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 
 ## Test suite
 
-- **199 tests passed**, 0 skipped, 0 failed (2026-08-05, Python 3.14.6).
+- **207 tests passed**, 0 skipped, 0 failed (2026-08-06, Python 3.14.6).
 - Zero mocks: no `unittest.mock` / `MagicMock` / `@patch` / `create_autospec`
   in `tests/` or `src/`.
 - Deterministic: fixed seeds, seeded RNG, fully enumerated CFR / ICM / Bayesian
@@ -19,10 +19,10 @@ uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 
 ## Coverage on `src/`
 
-- **97.15%** line + branch (gate: `--cov-fail-under=90`), `branch = true`.
+- **97.51%** line + branch (gate: `--cov-fail-under=90`), `branch = true`.
 - At 100%: `mission.py`, `scenarios.py`, `gadgets.py`, `poison_detect.py`,
   `figures/plotting.py`.
-- Lowest module: `icm.py` at 92.81%. The residual misses across `icm.py` and
+- Lowest module: `icm.py` at 94.27%. The residual misses across `icm.py` and
   `poker_engine.py` are real error and edge branches — tracked in `TODO.md`,
   not dead code.
 

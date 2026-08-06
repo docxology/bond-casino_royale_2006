@@ -70,6 +70,13 @@ def exact_icm_equity(stacks: Sequence[int], prizes: Sequence[float], player: int
         total = sum(remaining)
         if len(remaining) == 1:
             return prize_slice[0] if prize_slice else 0.0
+        if total == 0:
+            # Every surviving player is already busted (a zero-stack mass can
+            # arise when an ICM win/lose probe busts several players at once,
+            # e.g. ``bubble_factor`` over a field that already contains a
+            # zero-stack short stack). There are no chips to decide the order,
+            # so the next prize is shared equally among the tied survivors.
+            return prize_slice[0] / len(remaining) if prize_slice else 0.0
         if not prize_slice:
             return 0.0
         first = (remaining[target] / total) * prize_slice[0]

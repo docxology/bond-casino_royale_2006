@@ -140,7 +140,9 @@ ICM_WIN_PROB = 0.30
 ICM_POT_AFTER_CALL = 1800
 
 
-def poker_snapshot(seed: int = SEED) -> dict[str, object]:
+def poker_snapshot(
+    seed: int = SEED, *, pot: float | None = None, to_call: float | None = None
+) -> dict[str, object]:
     """Compute the final-hand equity, pot-odds price, and recommended action.
 
     The opponent's range and the raise threshold are both derived from his
@@ -148,7 +150,15 @@ def poker_snapshot(seed: int = SEED) -> dict[str, object]:
     picks the :data:`poker_engine.RANGE_ARCHETYPES` range through
     :func:`poker_engine.range_for_archetype` and the ``raise_margin`` through
     :func:`poker_engine.recommended_raise_margin`.
+
+    ``pot`` / ``to_call`` override the canonical constants (kept as the
+    defaults) so a test can prove the *same* snapshot path is able to say
+    ``fold`` when the price is unfavourable - the canonical hand always clears
+    the pot-odds bar, so without the override ``fold`` is unreachable on this
+    path and the decision code would only ever be shown able to raise/call.
     """
+    pot = POKER_POT if pot is None else pot
+    to_call = POKER_TO_CALL if to_call is None else to_call
     rng = random.Random(seed)
     hero = pe.parse_cards(POKER_HERO)
     board = pe.parse_cards(POKER_BOARD)
@@ -168,8 +178,6 @@ def poker_snapshot(seed: int = SEED) -> dict[str, object]:
         num_simulations=POKER_SIMULATIONS,
         rng=rng,
     )
-    pot = POKER_POT
-    to_call = POKER_TO_CALL
     raise_margin = pe.recommended_raise_margin(POKER_OPPONENT_ARCHETYPE)
     break_even = pe.break_even_equity(pot, to_call)
     margin = pe.equity_margin(equity, pot, to_call)
