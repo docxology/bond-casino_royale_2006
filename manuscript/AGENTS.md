@@ -4,7 +4,7 @@ type: "manuscript_guide"
 version: "0.1.0"
 ---
 
-# Manuscript (`projects/working/bond/casino_royale_2006/manuscript/`)
+# Manuscript (`manuscript/`)
 
 Agent rules for this film's manuscript. The repository-wide read-first rules
 live in `docs/agent_instructions.md`; this file covers manuscript-specific
@@ -17,7 +17,7 @@ editing: token protocol, figure protocol, and section workflow.
 | `00_abstract.md` .. `07_scope_and_related_work.md`, `99_references.md` | The prose sections. Every computed number must be a `{{TOKEN}}`. |
 | `config.yaml` | Identity + keywords + publication metadata. Consumed by `manuscript_variables.py`. |
 | `SYNTAX.md` | Token + figure + citation syntax reference (may contain literal `{{VARIABLE}}` illustrations). |
-| `references.bib` | Descriptive bibliography (local-only tree: no remote DOIs). |
+| `references.bib` | Descriptive bibliography; no DOI fields are maintained. |
 | `preamble.md`, `layer_contract.yaml`, `AGENTS.md`, `README.md` | LaTeX injection, layer contract, and human/agent guides. |
 
 ## Token protocol

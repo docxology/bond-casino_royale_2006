@@ -9,9 +9,8 @@ tags: [bond, film-package, mission-provider, poker, cfr, icm, bayesian, anti-mon
 
 # casino-royale-2006
 
-Project-scoped skill for the BOND film package at
-`projects/working/bond/casino_royale_2006/`. Load this when working inside the
-project.
+Project-scoped skill for the BOND film package at the repository root
+(`bond-casino_royale_2006`). Load this when working inside the project.
 
 ## When to Use
 
@@ -36,7 +35,7 @@ project.
 ## Key Commands
 
 ```bash
-cd projects/working/bond/casino_royale_2006
+cd bond-casino_royale_2006
 uv sync --extra dev
 uv run pytest tests/ --cov=src --cov-fail-under=90 -q
 uv run ruff check src/ scripts/ && uv run ruff format --check src/ scripts/
@@ -68,6 +67,6 @@ uv run python scripts/z_generate_manuscript_variables.py
 
 ## Cross-Refs
 
-- BOND protocol (frozen): `projects/working/bond/bond-api/src/bond_api/protocol.py`
+- BOND protocol (frozen): `../bond-api/src/bond_api/protocol.py`
 - Suite guardrails: Hermes skill `bond-suite-package-development`
 - Project rulebook: `docs/agent_instructions.md`

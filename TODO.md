@@ -5,9 +5,9 @@ domain cores (poker equity/pot-odds, river CFR, ICM, Bayesian opponent
 archetypes, laundering typologies, laundering network analytics, parkour
 routing, digitalis triage) plus `scenarios.py`, `gadgets.py`,
 `manuscript_variables.py`, `figures/plotting.py`, and the frozen BOND-API
-adapter `mission.py`. **Verified state, measured this session (2026-08-05,
-Python 3.14.6, `uv run pytest tests/ --cov=src --cov-fail-under=90`): 199 tests
-passed, 0 skipped, 0 failed; 97.15% line+branch coverage on `src/`.** `ruff
+adapter `mission.py`. **Verified state, measured this session (2026-10-25,
+Python 3.14.9, `uv run pytest tests/ --cov=src --cov-fail-under=90`): 207 tests
+passed, 0 skipped, 0 failed; 97.51% line+branch coverage on `src/`.** `ruff
 check`, `ruff format --check`, `mypy src/ scripts/`, and
 `scripts/z_generate_manuscript_variables.py` (66 tokens, 9 sections, 4 figures)
 all exit 0; `git status --short` is clean.
@@ -90,7 +90,9 @@ Accepted and deliberate. Recorded here so they are not re-litigated as defects.
 - **Only one canonical scenario exists** (`scenarios.py`, `SEED = 17`). That is
   the design: one number computed once is the number shown everywhere. V5 asks
   for a *parameterized* negative control, not a second canonical scene.
-- **No remote.** Local-only working tree; this package is never pushed.
+- **Published.** Canonical remote is
+  <https://github.com/docxology/bond-casino_royale_2006> (`main`); `bond-api`
+  stays a sibling checkout at `../bond-api`, not an index package.
 
 ## Verification
 
@@ -98,7 +100,7 @@ Every command below was run at the commit that introduced this file; the stated
 outcome is what it produced.
 
 ```bash
-cd projects/working/bond/casino_royale_2006
+cd bond-casino_royale_2006
 
 uv run pytest tests/ --cov=src --cov-fail-under=90 -q
 #   -> 190 passed; TOTAL 97.13% line+branch; "Required test coverage of 90% reached"

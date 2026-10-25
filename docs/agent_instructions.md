@@ -72,7 +72,6 @@ violating:* the mypy gate fails; debugging becomes guesswork.
 ## Verification checklist (run before declaring done)
 
 ```bash
-cd projects/working/bond/casino_royale_2006
 uv run pytest tests/ --cov=src --cov-fail-under=90 -q          # >=90% line+branch
 grep -r "unittest.mock\|MagicMock\|@patch\|create_autospec" tests/ || echo Clean
 grep -rnE "^(from|import) (infrastructure|bond_api)" \

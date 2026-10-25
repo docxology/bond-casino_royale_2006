@@ -1,6 +1,6 @@
 # casino-royale-2006 skill — AGENTS.md
 
-Project-scoped skill bundle for the `casino_royale_2006` exemplar.
+Project-scoped skill bundle for the `casino_royale_2006` film package.
 
 | File | Purpose |
 | --- | --- |
@@ -12,8 +12,8 @@ Project-scoped skill bundle for the `casino_royale_2006` exemplar.
 
 Agents that need to:
 
-- Drive the in-repo exemplar end-to-end.
-- Fork this exemplar as a starting scaffold.
+- Drive the LE CHIFFRE package end-to-end.
+- Fork this film package as a starting scaffold.
 - Verify layer boundaries and thin-orchestrator contracts.
 
 ## Cross-refs

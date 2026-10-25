@@ -34,5 +34,5 @@ reference it with `[@fig:label]` (parenthetical) or `@fig:label` (narrative).
 
 ## Citations
 
-Use `@key` Pandoc citations backed by `references.bib`. Because the BOND tree
-is local-only, entries are descriptive rather than DOI-linked.
+Use `@key` Pandoc citations backed by `references.bib`. Entries are
+descriptive rather than DOI-linked.

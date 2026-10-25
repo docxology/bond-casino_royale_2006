@@ -3,7 +3,7 @@
 # frozen bond-api MissionProvider protocol (Layer 1, THE PROTOCOL).
 
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -17,24 +17,24 @@ authors = [
 requires-python = ">=3.10"
 dependencies = [
     "bond-api>=0.1.0",
-    "matplotlib>=3.7.0",
-    "pyyaml>=6.0",
+    "matplotlib>=3.10.0",
+    "pyyaml>=6.0.2",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "ruff>=0.6.0",
-    "mypy>=1.10.0",
-    "types-PyYAML>=6.0",
+    "pytest>=9.0",
+    "pytest-cov>=7.0",
+    "ruff>=0.16",
+    "mypy>=2.3",
+    "types-PyYAML>=6.0.12",
 ]
 
 [tool.uv.sources]
-# The frozen protocol contract is a local sibling package inside the BOND
-# suite. Path source keeps this film package bound to the canonical bond-api
-# without publishing to any index (the suite is local-only).
-bond-api = { path = "/Users/4d/Documents/GitHub/template/projects/working/bond/bond-api" }
+# The frozen protocol contract is a sibling checkout of the BOND suite, never
+# published to an index. A relative path keeps this binding valid wherever the
+# suite is cloned, instead of pinning one machine's absolute path.
+bond-api = { path = "../bond-api" }
 
 [tool.pytest.ini_options]
 # RASP Strict Assertion: Tests must be clearly separated and structurally identifiable

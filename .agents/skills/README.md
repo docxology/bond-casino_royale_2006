@@ -6,7 +6,7 @@ contract), and `README.md` (pointer).
 
 | Skill | Purpose |
 | --- | --- |
-| [`casino-royale-2006/`](casino-royale-2006/README.md) | Drive this exemplar end-to-end (commands, pitfalls, contract traceability). |
+| [`casino-royale-2006/`](casino-royale-2006/README.md) | Drive this film package end-to-end (commands, pitfalls, contract traceability). |
 
 Load [`casino-royale-2006/SKILL.md`](casino-royale-2006/SKILL.md)
-when working inside the exemplar or forking it as a scaffold.
+when working inside the film package or forking it as a scaffold.

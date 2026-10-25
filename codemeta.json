@@ -23,7 +23,7 @@
     "email": "daniel@activeinference.institute"
   },
   "license": "MIT",
-  "repository": "local-only working tree (no remote)",
+  "repository": "https://github.com/docxology/bond-casino_royale_2006",
   "code": {
     "language": "python",
     "frameworks": [

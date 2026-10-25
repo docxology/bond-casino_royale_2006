@@ -38,5 +38,5 @@ publication:
   # regenerations produce byte-identical artifacts. Bump it by hand at release.
   date: "2026-08-05"
   license: "MIT"
-  loader: "BOND suite local-only tree (no remote, never pushed)"
+  loader: "BOND suite checkout (github.com/docxology/bond-casino_royale_2006)"
   branding: "mission codename LE CHIFFRE"

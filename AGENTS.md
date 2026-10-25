@@ -1,7 +1,8 @@
 # Casino Royale (2006) — LE CHIFFRE — PROJECT BOND film package
 
 **Mission codename:** LE CHIFFRE · **Film:** Casino Royale (2006) · **BOND
-suite:** projects/working/bond/ · **Local-only** (no remote, never pushed).
+suite:** sibling `bond-api` checkout at `../bond-api` · **Remote:**
+<https://github.com/docxology/bond-casino_royale_2006> (`main`).
 
 This package is one of the BOND suite's 27 film packages. It implements the
 frozen **BOND-API** `MissionProvider` protocol (THE PROTOCOL) over eight pure,
@@ -27,7 +28,7 @@ tokens and the four figures.
 ## Hard guardrails (shared BOND preamble)
 
 - Scope = exactly this package dir. Never touch siblings, bond root, or the
-  template repo. Local-only; never push.
+  template repo. Commit here only; publish to `origin` `main` when green.
 - Path-scoped commits, `git add -A` inside this repo only.
 - No mock framework. Real data + computation only.
 - ≥90% line+branch coverage: `uv run pytest tests/ --cov=src --cov-fail-under=90`.
@@ -62,9 +63,9 @@ orchestrator. Deepen inside the package; do not reshape them.
 ## Build & verify
 
 ```bash
-cd projects/working/bond/casino_royale_2006
+cd bond-casino_royale_2006
 
-# 1. install (bond-api is a local path dependency; --extra dev adds the gates)
+# 1. install (bond-api is the ../bond-api sibling; --extra dev adds the gates)
 uv sync --extra dev
 
 # 2. run it

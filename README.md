@@ -55,8 +55,9 @@ provider. Read `gadgets.GADGET_NAMES` rather than hard-coding the list.
 ## Quick start
 
 ```bash
-cd projects/working/bond/casino_royale_2006
-uv sync --extra dev                                        # deps incl. the frozen bond-api sibling
+git clone https://github.com/docxology/bond-casino_royale_2006.git
+cd bond-casino_royale_2006
+uv sync --extra dev                                        # deps incl. the frozen bond-api sibling (../bond-api)
 uv run python scripts/00_preflight.py                      # protocol conformance + slug check
 uv run python scripts/run_debrief.py                       # full five-stage mission
 uv run python scripts/z_generate_manuscript_variables.py   # tokens + resolved prose + figures
@@ -93,4 +94,5 @@ docs/                     behavioural rulebook, architecture, protocol, testing 
 - [`docs/protocol.md`](docs/protocol.md) — bond-api binding + the frozen surface.
 - [`docs/_generated/COUNTS.md`](docs/_generated/COUNTS.md) — measured test/coverage.
 
-> Local-only working tree. No remote exists; this package is never pushed.
+> Canonical remote: <https://github.com/docxology/bond-casino_royale_2006>.
+> `bond-api` is a sibling checkout (`../bond-api`), not a published index package.

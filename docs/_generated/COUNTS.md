@@ -3,13 +3,12 @@
 Generated from an actual gate run; update after any edit by running:
 
 ```bash
-cd projects/working/bond/casino_royale_2006
 uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 ```
 
 ## Test suite
 
-- **207 tests passed**, 0 skipped, 0 failed (2026-08-06, Python 3.14.6).
+- **207 tests passed**, 0 skipped, 0 failed (2026-10-25, Python 3.14.9).
 - Zero mocks: no `unittest.mock` / `MagicMock` / `@patch` / `create_autospec`
   in `tests/` or `src/`.
 - Deterministic: fixed seeds, seeded RNG, fully enumerated CFR / ICM / Bayesian
