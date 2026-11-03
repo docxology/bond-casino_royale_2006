@@ -22,7 +22,7 @@ callables), `mission.py`, `manuscript_variables.py`, `figures/` and `__init__.py
 - **Manuscript metrics are `{{TOKEN}}`s**, hydrated by `manuscript_variables.py`; never hand-authored
   in prose.
 - **Coverage floor: 90% line and branch on `src/`.**
-- **Publishing state as observed**: `origin` is the private mirror
+- **Publishing state as observed**: `origin` is
   `github.com/docxology/bond-casino_royale_2006` on `main`, and the package publishes there when
   green. The BOND suite copy under `projects/working/bond/` has no remote of its own — that is the
-  arrangement the metadata comments describe, not a claim that this repository is unpublished.
+  arrangement the metadata comments describe, not a claim that this repository lacks its own remote.
