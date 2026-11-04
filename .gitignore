@@ -13,3 +13,6 @@ __pycache__/
 
 # Regenerable mission artifacts (figures, data, resolved manuscript, dashboard)
 output/
+
+# Build output the vendored copies' own builds write into vendor/.
+vendor/**/build/
