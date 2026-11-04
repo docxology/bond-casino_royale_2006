@@ -5,12 +5,12 @@ domain cores (poker equity/pot-odds, river CFR, ICM, Bayesian opponent
 archetypes, laundering typologies, laundering network analytics, parkour
 routing, digitalis triage) plus `scenarios.py`, `gadgets.py`,
 `manuscript_variables.py`, `figures/plotting.py`, and the frozen BOND-API
-adapter `mission.py`. **Verified state, measured this session (2026-10-25,
-Python 3.14.9, `uv run pytest tests/ --cov=src --cov-fail-under=90`): 207 tests
-passed, 0 skipped, 0 failed; 97.51% line+branch coverage on `src/`.** `ruff
-check`, `ruff format --check`, `mypy src/ scripts/`, and
-`scripts/z_generate_manuscript_variables.py` (66 tokens, 9 sections, 4 figures)
-all exit 0; `git status --short` is clean.
+adapter `mission.py`. **Verified state, re-measured 2026-11-04 after the
+`bond-api` vendoring round (Python 3.14.9, `uv run pytest tests/
+--cov=src --cov-fail-under=90`): 208 tests passed, 0 skipped, 0 failed; 97.51%
+line+branch coverage on `src/`.** `ruff check`, `ruff format --check`,
+`mypy src/ scripts/`, and `scripts/z_generate_manuscript_variables.py` (66
+tokens, 9 sections, 4 figures) all exit 0; `git status --short` is clean.
 
 Open work only. Completed phases live in git history and in the manuscript.
 
@@ -92,7 +92,7 @@ Accepted and deliberate. Recorded here so they are not re-litigated as defects.
   for a *parameterized* negative control, not a second canonical scene.
 - **Published.** Canonical remote is
   <https://github.com/docxology/bond-casino_royale_2006> (`main`); `bond-api`
-  stays a sibling checkout at `../bond-api`, not an index package.
+  is vendored at `vendor/bond-api`, not an index package.
 
 ## Verification
 

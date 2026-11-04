@@ -67,6 +67,6 @@ uv run python scripts/z_generate_manuscript_variables.py
 
 ## Cross-Refs
 
-- BOND protocol (frozen): `../bond-api/src/bond_api/protocol.py`
+- BOND protocol (frozen): `vendor/bond-api/src/bond_api/protocol.py`
 - Suite guardrails: Hermes skill `bond-suite-package-development`
 - Project rulebook: `docs/agent_instructions.md`

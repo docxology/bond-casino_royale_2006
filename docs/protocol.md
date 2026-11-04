@@ -1,14 +1,14 @@
 # Protocol Integration — binding to BOND-API
 
 This film package implements the **frozen** BOND-API `MissionProvider`
-protocol (codename THE PROTOCOL), defined in the `bond-api` sibling package
-(`src/bond_api/protocol.py`). bond-api is FROZEN — this package codes to it and
-never invents its own protocol types.
+protocol (codename THE PROTOCOL), defined in the `bond-api` package vendored at
+`vendor/bond-api` (`src/bond_api/protocol.py` inside the copy). bond-api is
+FROZEN — this package codes to it and never invents its own protocol types.
 
 ## How this package binds
 
 - **Path dependency.** `pyproject.toml` pins `bond-api` via
-  `[tool.uv.sources]` to the local sibling path, and lists it in
+  `[tool.uv.sources]` to the copy at `vendor/bond-api`, and lists it in
   `[project] dependencies`. Run `uv sync --extra dev` before testing.
 - **Adapter.** `src/casino_royale_2006/mission.py` imports the frozen types
   (`MissionBrief`, `ReconRequest`, `ReconReport`, `MissionPlan`, `MissionOutcome`,

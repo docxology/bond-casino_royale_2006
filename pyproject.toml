@@ -31,10 +31,11 @@ dev = [
 ]
 
 [tool.uv.sources]
-# The frozen protocol contract is a sibling checkout of the BOND suite, never
-# published to an index. A relative path keeps this binding valid wherever the
-# suite is cloned, instead of pinning one machine's absolute path.
-bond-api = { path = "../bond-api" }
+# The frozen protocol contract is vendored in this tree, never published to an
+# index. It previously bound the sibling checkout inside the suite (and, before
+# that, one machine's absolute path); the copy keeps the binding valid wherever
+# this repository is cloned.
+bond-api = { path = "vendor/bond-api" }
 
 [tool.pytest.ini_options]
 # RASP Strict Assertion: Tests must be clearly separated and structurally identifiable
@@ -72,6 +73,8 @@ exclude_lines = [
 # Project-local mypy settings (the monorepo root config has no mypy_path for
 # this package's src/ layout). Matches the root gates: strict-ish typing,
 # explicit package bases, types-PyYAML supplied via the dev extra.
+# Vendored copies are a dependency; their bytes are bound by scripts/vendor.py.
+exclude = ["(^|/)vendor/"]
 python_version = "3.12"
 mypy_path = ["src"]
 explicit_package_bases = true
@@ -90,6 +93,8 @@ ignore_missing_imports = true
 where = ["src"]
 
 [tool.ruff]
+# The vendored copies are byte-identical to upstream and must stay that way.
+extend-exclude = ["vendor"]
 line-length = 100
 target-version = "py310"
 

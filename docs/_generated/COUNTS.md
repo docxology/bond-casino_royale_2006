@@ -8,7 +8,9 @@ uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 
 ## Test suite
 
-- **207 tests passed**, 0 skipped, 0 failed (2026-10-25, Python 3.14.9).
+- **208 tests passed**, 0 skipped, 0 failed (2026-11-04, Python 3.14.9; the
+  208th is `tests/test_vendor_provenance.py`, added with the vendored `bond-api`
+  copy).
 - Zero mocks: no `unittest.mock` / `MagicMock` / `@patch` / `create_autospec`
   in `tests/` or `src/`.
 - Deterministic: fixed seeds, seeded RNG, fully enumerated CFR / ICM / Bayesian
@@ -28,8 +30,10 @@ uv run pytest tests/ --cov=src --cov-fail-under=90 -q 2>&1 | tail -20
 ## Static gates
 
 - `uv run ruff check src/ scripts/ tests/` — all checks passed.
-- `uv run ruff format --check src/ scripts/ tests/` — 38 files already formatted.
-- `uv run mypy src/ scripts/` — no issues found in 23 source files.
+- `uv run ruff format --check src/ scripts/ tests/` — 43 files already formatted.
+- `uv run mypy src/ scripts/` — no issues found in 24 source files.
+- `uv run python scripts/vendor.py --check` — exit 0; `vendor/bond-api: ok`,
+  0 findings.
 - `uv run python scripts/z_generate_manuscript_variables.py` — exit 0; 66
   tokens, 9 sections, 4 figures.
 
