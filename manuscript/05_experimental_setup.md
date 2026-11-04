@@ -26,8 +26,8 @@ hardcodes a number.
 
 ## Software environment
 
-- Python {{PYTHON_VERSION}} (requires-python `>=3.10`)
-- Dependencies: `bond-api` (the frozen protocol, sibling path dependency),
+- Python {{PYTHON_VERSION}} (requires-python `>=3.11`)
+- Dependencies: `bond-api` (the frozen protocol, vendored at `vendor/bond-api`),
   `matplotlib` (figures), `pyyaml` (config); dev: `pytest`, `pytest-cov`,
   `ruff`, `mypy`, `types-PyYAML`.
 - Deterministic by design: fixed `SEED`, seeded `random.Random` instances,

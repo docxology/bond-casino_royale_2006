@@ -15,7 +15,7 @@ One module per domain core (`test_poker_engine.py`, `test_poker_cfr.py`, `test_i
 - **Determinism tests are the point, not a formality**: fixed seeds and no wall clock are what make
   regeneration byte-identical, and a test that stops checking it removes the guarantee.
 - **The mission test needs `bond-api`**; the core tests do not, so keep the split that lets the core
-  be verified without the sibling checkout.
+  be verified without importing it.
 - **Coverage floor 90% line and branch on `src/`** (`uv run pytest tests/ --cov=src
   --cov-fail-under=90`). Do not lower it to admit new code.
 - **`test_scripts_smoke.py` covers the phase CLIs**; a new script needs a smoke path.

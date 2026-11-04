@@ -92,7 +92,7 @@ Accepted and deliberate. Recorded here so they are not re-litigated as defects.
   for a *parameterized* negative control, not a second canonical scene.
 - **Published.** Canonical remote is
   <https://github.com/docxology/bond-casino_royale_2006> (`main`); `bond-api`
-  stays a sibling checkout at `../bond-api`, not an index package.
+  is vendored at `vendor/bond-api`, not an index package.
 
 ## Verification
 

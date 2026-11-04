@@ -1,7 +1,7 @@
 # Casino Royale (2006) — LE CHIFFRE — PROJECT BOND film package
 
 **Mission codename:** LE CHIFFRE · **Film:** Casino Royale (2006) · **BOND
-suite:** sibling `bond-api` checkout at `../bond-api` · **Remote:**
+suite:** `bond-api` vendored at `vendor/bond-api` · **Remote:**
 <https://github.com/docxology/bond-casino_royale_2006> (`main`).
 
 This package is one of the BOND suite's 27 film packages. It implements the
@@ -65,7 +65,7 @@ orchestrator. Deepen inside the package; do not reshape them.
 ```bash
 cd bond-casino_royale_2006
 
-# 1. install (bond-api is the ../bond-api sibling; --extra dev adds the gates)
+# 1. install (bond-api is the copy at vendor/bond-api; --extra dev adds the gates)
 uv sync --extra dev
 
 # 2. run it

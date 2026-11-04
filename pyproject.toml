@@ -31,9 +31,10 @@ dev = [
 ]
 
 [tool.uv.sources]
-# The frozen protocol contract is a sibling checkout of the BOND suite, never
-# published to an index. A relative path keeps this binding valid wherever the
-# suite is cloned, instead of pinning one machine's absolute path.
+# The frozen protocol contract is vendored in this tree, never published to an
+# index. It previously bound the sibling checkout inside the suite (and, before
+# that, one machine's absolute path); the copy keeps the binding valid wherever
+# this repository is cloned.
 bond-api = { path = "vendor/bond-api" }
 
 [tool.pytest.ini_options]
