@@ -4,6 +4,30 @@ PROJECT BOND film package for *Casino Royale* (2006), mission codename
 **LE CHIFFRE**. Eight deterministic, infrastructure-free domain cores bound to
 the frozen BOND-API `MissionProvider` protocol by one thin adapter.
 
+## Mission model
+
+```mermaid
+flowchart TD
+    accTitle: Casino Royale 2006 implemented mission analyses
+    accDescr: Holdem tournament stacks, observed villain actions, chip-flow ledger and clinical vitals feed Exact hand equity, river CFR equilibrium, ICM bubble pressure and Bayesian archetype reads; Smurf and ring chip-laundering typology scoring and PageRank/HHI flow concentration; Constrained multi-surface pursuit routing and Bayesian digitalis toxicity triage. The mission adapter returns table strategy, laundering alerts, pursuit path and antidote triage with provenance, then a debrief.
+    I["Holdem tournament stacks, observed villain actions, chip-flow ledger and clinical vitals"]
+    G0["Exact hand equity, river CFR equilibrium, ICM bubble pressure and Bayesian archetype reads"]
+    I --> G0
+    G1["Smurf/ring chip-laundering typology scoring and PageRank/HHI flow concentration"]
+    I --> G1
+    G2["Constrained multi-surface pursuit routing and Bayesian digitalis toxicity triage"]
+    I --> G2
+    O["mission.py: execute returns MissionOutcome<br/>Table strategy, laundering alerts, pursuit path, antidote triage and provenance"]
+    G0 --> O
+    G1 --> O
+    G2 --> O
+    O --> F["debrief: mission summary"]
+```
+
+The branches group implemented capabilities; they do not imply a runtime order.
+
+**Source map:** [`poker_engine.py`](src/casino_royale_2006/poker_engine.py), [`poker_cfr.py`](src/casino_royale_2006/poker_cfr.py), [`icm.py`](src/casino_royale_2006/icm.py), [`opponent_bayes.py`](src/casino_royale_2006/opponent_bayes.py); [`laundering_detect.py`](src/casino_royale_2006/laundering_detect.py), [`laundering_network.py`](src/casino_royale_2006/laundering_network.py); [`urban_routes.py`](src/casino_royale_2006/urban_routes.py), [`poison_detect.py`](src/casino_royale_2006/poison_detect.py), [`scenarios.py`](src/casino_royale_2006/scenarios.py); [`mission.py`](src/casino_royale_2006/mission.py).
+
 ## The concept mapping
 
 The film is the spec. Four modules implement its literal set pieces; four more
