@@ -1,5 +1,7 @@
 # docs/ — Mission Documentation Hub
 
+[Package maintenance](package-maintenance.md) identifies the dependency and citation records.
+
 **Quick reference:** [Agent Instructions](agent_instructions.md) ·
 [Architecture](architecture.md) · [Testing](testing_philosophy.md) ·
 [Style](style_guide.md) · [Protocol](protocol.md)

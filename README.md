@@ -1,5 +1,7 @@
 # Casino Royale (2006): LE CHIFFRE — Special-Agent Mission Software
 
+See [package maintenance](docs/package-maintenance.md) for dependency and citation records.
+
 PROJECT BOND film package for *Casino Royale* (2006), mission codename
 **LE CHIFFRE**. Eight deterministic, infrastructure-free domain cores bound to
 the frozen BOND-API `MissionProvider` protocol by one thin adapter.
