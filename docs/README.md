@@ -1,5 +1,7 @@
 # docs/ — LE CHIFFRE documentation
 
+[Package maintenance](package-maintenance.md) covers dependency and release records.
+
 This directory is the behavioural rulebook for the **Casino Royale (2006) / LE
 CHIFFRE** mission package. Everything here is a hard constraint on agents and
 contributors working inside the package, not background reading. It documents
