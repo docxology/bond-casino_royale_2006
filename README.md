@@ -1,6 +1,7 @@
 # Casino Royale (2006): LE CHIFFRE — Special-Agent Mission Software
 
-See [package maintenance](docs/package-maintenance.md) for dependency and citation records.
+For the distribution version, checkout Python selection, dependency sources,
+and citation records, see [package maintenance](docs/package-maintenance.md).
 
 PROJECT BOND film package for *Casino Royale* (2006), mission codename
 **LE CHIFFRE**. Eight deterministic, infrastructure-free domain cores bound to

@@ -1,5 +1,8 @@
 # Casino Royale (2006) — LE CHIFFRE — PROJECT BOND film package
 
+The [package maintenance guide](docs/package-maintenance.md) records the
+distribution identity, Python selection, dependency provenance, and citation metadata.
+
 **Mission codename:** LE CHIFFRE · **Film:** Casino Royale (2006) · **BOND
 suite:** `bond-api` vendored at `vendor/bond-api` · **Remote:**
 <https://github.com/docxology/bond-casino_royale_2006> (`main`).
